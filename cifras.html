@@ -151,30 +151,6 @@
         </div>
     </main>
     
-    <!-- Action Bar -->
-    <div class="action-bar fixed bottom-0 left-0 right-0 bg-white border-t py-3 px-6">
-        <div class="flex justify-around items-center">
-            <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-search fa-lg"></i>
-                </div>
-                <span class="text-xs mt-1">Buscar</span>
-            </button>
-            <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-camera fa-lg"></i>
-                </div>
-                <span class="text-xs mt-1">Foto</span>
-            </button>
-            <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-cloud-upload-alt fa-lg"></i>
-                </div>
-                <span class="text-xs mt-1">Upload</span>
-            </button>
-        </div>
-    </div>
-    
     <!-- Modals -->
     <!-- Cloud Chords Modal -->
     <div id="cloudModal" class="modal-overlay">
@@ -227,51 +203,40 @@
         <div class="modal-content bg-white rounded-xl w-full max-w-md">
             <div class="p-5">
                 <div class="flex items-start justify-between">
-                    <h3 class="text-xl font-semibold">Alterar para modo:</h3>
+                    <h3 class="text-xl font-semibold">Ações</h3>
                     <button id="closeMode" class="text-gray-500 hover:text-gray-700">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
-                <div class="mt-4 space-y-4">
-                    <div class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
+                <!-- Botões Buscar, Foto e Upload substituem os anteriores -->
+                <div class="mt-4 grid grid-cols-1 gap-4">
+                    <button class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
                         <div class="mr-4">
-                            <i class="fas fa-wifi text-2xl text-purple-600"></i>
+                            <i class="fas fa-search fa-lg text-purple-600"></i>
                         </div>
                         <div>
-                            <p class="font-medium">Online</p>
-                            <p class="text-sm text-gray-500">Sincronizado com a nuvem</p>
+                            <p class="font-medium">Buscar</p>
+                            <p class="text-sm text-gray-500">Buscar cifras</p>
                         </div>
-                        <div class="ml-auto">
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
+                    </button>
+                    <button class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
                         <div class="mr-4">
-                            <i class="fas fa-signal-alt-slash text-2xl text-gray-600"></i>
+                            <i class="fas fa-camera fa-lg text-yellow-500"></i>
                         </div>
                         <div>
-                            <p class="font-medium">Offline</p>
-                            <p class="text-sm text-gray-500">Somente neste dispositivo</p>
+                            <p class="font-medium">Foto</p>
+                            <p class="text-sm text-gray-500">Adicionar cifra por foto</p>
                         </div>
-                        <div class="ml-auto">
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
+                    </button>
+                    <button class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
                         <div class="mr-4">
-                            <i class="fas fa-save text-2xl text-blue-500"></i>
+                            <i class="fas fa-cloud-upload-alt fa-lg text-blue-500"></i>
                         </div>
                         <div>
-                            <p class="font-medium">Salvar</p>
-                            <p class="text-sm text-gray-500">Salvar alterações atuais</p>
+                            <p class="font-medium">Upload</p>
+                            <p class="text-sm text-gray-500">Fazer upload de cifra</p>
                         </div>
-                        <div class="ml-auto">
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </div>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
