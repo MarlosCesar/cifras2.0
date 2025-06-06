@@ -1,524 +1,94 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <!-- Viewport melhorada para responsividade mobile, iOS/Android e safe-area -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>Cifras 2.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Web App icons e manifest para iOS/Android -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#4f46e5">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        html, body {
-            max-width: 100vw;
-            overflow-x: hidden;
-            /* Safe-area para dispositivos iOS */
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-top: env(safe-area-inset-top);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-            background-color: #f5f7f9;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            color: #292524;
-            min-height: 100vh;
-        }
-
-        .tab-item {
-            position: relative;
-            padding-bottom: 12px;
-        }
-        .tab-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 10%;
-            right: 10%;
-            height: 3px;
-            background: linear-gradient(90deg, #4f46e5, #8b5cf6);
-            border-radius: 3px;
-        }
-        .fab-btn {
-            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
-            transition: all 0.3s ease;
-            min-width: 56px;
-            min-height: 56px;
-            margin-bottom: env(safe-area-inset-bottom, 16px);
-            touch-action: manipulation;
-        }
-        .fab-btn:hover, .fab-btn:focus {
-            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.3);
-            transform: translateY(-2px);
-        }
-
-        input[type="text"], input[type="radio"], input[type="checkbox"], button, .fab-btn {
-            touch-action: manipulation;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 50;
-        }
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .modal-content {
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-            max-width: 95vw;
-            width: 100%;
-        }
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .chord-card {
-            transition: all 0.2s ease;
-        }
-        .chord-card:hover {
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
-
-        /* Scrolling para tabs e cards */
-        .tab-scroll {
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .tab-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Mobile first: ajustes para telas pequenas */
-        @media (max-width: 640px) {
-            .main-content {
-                padding: 12px !important;
-            }
-            .chord-card {
-                margin-bottom: 16px;
-            }
-            .fab-btn {
-                right: 16px !important;
-                bottom: 24px !important;
-            }
-            .modal-content {
-                max-width: 98vw;
-            }
-        }
-
-        /* Tablets */
-        @media (min-width: 641px) and (max-width: 1024px) {
-            .main-content {
-                padding: 24px !important;
-            }
-        }
-
-        /* Fab menu custom styles */
-        .fab-action {
-            opacity: 0;
-            transform: translateY(24px);
-            pointer-events: none;
-        }
-        .fab-action.opacity-100 {
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-            pointer-events: auto !important;
-        }
-        .fab-action.opacity-0 {
-            opacity: 0 !important;
-            transform: translateY(24px) !important;
-            pointer-events: none !important;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Seu aplicativo de cifras"/>
+  <meta name="theme-color" content="#1A202C"/>
+  <title>Cifras 2.0</title>
+  <link rel="manifest" href="manifest2.json" />
+  <link rel="icon" type="image/svg+xml" href="favicon2.svg" />
+  <link rel="stylesheet" href="style2.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 text-gray-800">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 bg-white shadow-sm" style="padding-top: env(safe-area-inset-top)">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
-                <div class="flex items-center">
-                    <div class="text-purple-600 text-2xl font-bold">
-                        Cifras <span class="bg-purple-600 text-white text-sm px-1 py-0.5 rounded">2.0</span>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto mt-2 sm:mt-0">
-                    <div class="relative flex-1 sm:flex-none">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <input 
-                            type="text" 
-                            placeholder="Buscar cifra..." 
-                            class="pl-10 pr-4 py-2 w-full bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
-                            style="min-width: 0;"
-                        >
-                    </div>
-                    <div class="h-8 w-8 rounded-full bg-gray-200 border-2 border-dashed flex items-center justify-center">
-                        <i class="fas fa-user text-gray-500"></i>
-                    </div>
-                </div>
-            </div>
-            <!-- Tabs Navigation -->
-            <div class="mt-4 pb-1 tab-scroll">
-                <div class="flex space-x-4 sm:space-x-8 min-w-max">
-                    <button class="tab-item text-sm font-medium active">
-                        Domingo Manhã
-                    </button>
-                    <button class="tab-item text-sm font-medium text-gray-600 hover:text-gray-900">
-                        Domingo Noite
-                    </button>
-                    <button class="tab-item text-sm font-medium text-gray-600 hover:text-gray-900">
-                        Segunda
-                    </button>
-                    <button class="tab-item text-sm font-medium text-gray-600 hover:text-gray-900">
-                        Quarta
-                    </button>
-                    <button class="tab-item text-sm font-medium text-gray-600 hover:text-gray-900">
-                        Santa Ceia
-                    </button>
-                    <button class="tab-item text-purple-600" aria-label="Adicionar Aba">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">Cifras</div>
+        <div class="search-wrap">
+          <input id="search-bar" class="search-bar" type="search" placeholder="Buscar cifra..." autocomplete="off" />
+          <ul id="search-dropdown" class="search-dropdown hidden"></ul>
         </div>
+      </div>
     </header>
-    
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-6 main-content min-h-[80vh]">
-        <!-- Empty State -->
-        <div class="max-w-2xl mx-auto text-center py-16">
-            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-6 flex items-center justify-center">
-                <i class="fas fa-music text-gray-500 text-xl"></i>
-            </div>
-            
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">Adicione sua primeira cifra</h3>
-            <p class="text-gray-500 mb-8">Comece importando ou criando uma nova cifra para iniciar sua coleção</p>
-            
-            <!-- Chord Action Buttons -->
-            <div class="flex flex-wrap justify-center gap-2 sm:gap-4">
-                <button class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow hover:bg-green-600 transition" aria-label="Confirmar">
-                    <i class="fas fa-check"></i>
-                </button>
-                <button class="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow hover:bg-red-600 transition" aria-label="Cancelar">
-                    <i class="fas fa-times"></i>
-                </button>
-                <button class="w-12 h-12 rounded-full bg-yellow-500 text-white flex items-center justify-center shadow hover:bg-yellow-600 transition" aria-label="Excluir">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-                <button class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow hover:bg-blue-600 transition" aria-label="Editar">
-                    <i class="fas fa-pen"></i>
-                </button>
-                <button class="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center shadow hover:bg-purple-600 transition" aria-label="Enviar">
-                    <i class="fas fa-arrow-up"></i>
-                </button>
-            </div>
+    <nav id="tabs" class="tabs-container" role="tablist"></nav>
+    <div id="tab-scroll-left" class="tab-arrow left">&#8592;</div>
+    <div id="tab-scroll-right" class="tab-arrow right">&#8594;</div>
+    <main>
+      <section id="cifra-list-section" class="cifra-list-section">
+        <div id="empty-state" class="empty-state">
+          <svg width="120" height="120" fill="none" viewBox="0 0 120 120">
+            <rect width="120" height="120" rx="24" fill="#C4D4D4" fill-opacity="0.15"/>
+            <path d="M40 50v20a10 10 0 0 0 20 0V60h10v10a10 10 0 1 0 20 0V50a10 10 0 1 0-20 0v10H60V50a10 10 0 0 0-20 0z" fill="#6B8A8A"/>
+            <circle cx="60" cy="60" r="34" stroke="#6B8A8A" stroke-width="2"/>
+          </svg>
+          <div class="empty-text">Adicione sua primeira cifra</div>
         </div>
-        
-        <!-- Floating Action Button Menu -->
-        <div class="fixed z-50 right-4 md:right-8 bottom-20 flex flex-col items-end space-y-3 pointer-events-none" id="fab-menu-wrapper" style="margin-bottom:env(safe-area-inset-bottom,16px);">
-            <!-- FAB child buttons: agora com ícones coloridos e nomes -->
-            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex items-center bg-white shadow rounded-full h-12 px-4 mb-1 hover:bg-purple-50"
-                id="fab-search" aria-label="Buscar">
-                <span class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                    <i class="fas fa-search fa-lg text-green-600"></i>
-                </span>
-                <span class="text-base font-medium text-gray-700 pr-2">Buscar</span>
-            </button>
-            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex items-center bg-white shadow rounded-full h-12 px-4 mb-1 hover:bg-purple-50"
-                id="fab-photo" aria-label="Foto">
-                <span class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                    <i class="fas fa-camera fa-lg text-blue-600"></i>
-                </span>
-                <span class="text-base font-medium text-gray-700 pr-2">Foto</span>
-            </button>
-            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex items-center bg-white shadow rounded-full h-12 px-4 mb-1 hover:bg-purple-50"
-                id="fab-upload" aria-label="Upload">
-                <span class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                    <i class="fas fa-cloud-upload-alt fa-lg text-purple-600"></i>
-                </span>
-                <span class="text-base font-medium text-gray-700 pr-2">Upload</span>
-            </button>
-            <!-- FAB principal -->
-            <button id="fab" class="pointer-events-auto w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn shadow-lg focus:outline-none"
-                aria-label="Ações rápidas">
-                <i class="fas fa-plus text-2xl transition-transform duration-200" id="fab-plus-icon"></i>
-            </button>
-        </div>
-
-        <!-- Chord Display Section (Hidden by default) -->
-        <div class="hidden" id="chordsContainer">
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-                <div class="flex items-center space-x-2 sm:space-x-4">
-                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center" aria-label="Anterior">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <h2 class="text-xl font-bold">Domingo Manhã</h2>
-                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center" aria-label="Próximo">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-                <button class="text-purple-600 hover:text-purple-800 flex items-center" aria-label="Editar Aba">
-                    <i class="fas fa-edit mr-2"></i> Editar
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Chord card example -->
-                <div class="bg-white rounded-xl shadow-sm chord-card overflow-hidden">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start">
-                            <h3 class="font-medium text-lg">Hosana</h3>
-                            <div class="flex items-center">
-                                <button class="text-indigo-500 hover:text-indigo-700 p-1" aria-label="Editar cifra">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="text-red-500 hover:text-red-700 p-1 ml-1" aria-label="Excluir cifra">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <p class="text-gray-500 text-sm mt-1">Tom: C</p>
-                        <p class="mt-4 text-gray-600 text-sm line-clamp-3">
-                            [Intro] C G Am F C G F C <br>
-                            [Verse] C G Am F <br>
-                            Eu quero ver a tua glória descer <br>
-                            C G F C <br>
-                            Quero sentir o teu poder... <br>
-                        </p>
-                    </div>
-                    <div class="border-t px-5 py-2.5 bg-gray-50 flex justify-between text-gray-500 text-sm">
-                        <div>
-                            <i class="fas fa-user mr-1"></i> Marlos Cesar
-                        </div>
-                        <div>
-                            <i class="fas fa-clock mr-1"></i> 12/05/2023
-                        </div>
-                    </div>
-                </div>
-                <!-- More chord cards here -->
-            </div>
-        </div>
+        <ul id="cifra-list" class="cifra-list"></ul>
+      </section>
+      <div id="float-controls" class="float-controls hidden">
+        <button id="select-all-btn" title="Selecionar todas"><span>&#9745;</span></button>
+        <button id="clear-selection-btn" title="Limpar seleção"><span>&#10006;</span></button>
+        <button id="delete-selected-btn" title="Excluir selecionadas"><span>&#128465;</span></button>
+        <button id="rename-selected-btn" title="Renomear selecionada" class="hidden"><span>&#9998;</span></button>
+        <button id="upload-selected-btn" title="Upload para Drive" class="hidden"><span>&#11014;</span></button>
+      </div>
     </main>
-    
-    <!-- Modals -->
-    <!-- Cloud Chords Modal -->
-    <div id="cloudModal" class="modal-overlay">
-        <div class="modal-content bg-white rounded-xl w-full max-w-md">
-            <div class="p-5">
-                <div class="flex items-start justify-between">
-                    <h3 class="text-xl font-semibold">Cifras na Nuvem</h3>
-                    <button id="closeCloud" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mt-4">
-                    <ul class="divide-y">
-                        <li class="py-3 flex items-center">
-                            <input type="checkbox" class="rounded text-purple-600 mr-3">
-                            <div>
-                                <p class="font-medium">Hosana</p>
-                                <p class="text-sm text-gray-500">Tom: C | Versão: 2023</p>
-                            </div>
-                        </li>
-                        <li class="py-3 flex items-center">
-                            <input type="checkbox" class="rounded text-purple-600 mr-3">
-                            <div>
-                                <p class="font-medium">Como Zaqueu</p>
-                                <p class="text-sm text-gray-500">Tom: A | Versão: Acústica</p>
-                            </div>
-                        </li>
-                        <li class="py-3 flex items-center">
-                            <input type="checkbox" class="rounded text-purple-600 mr-3">
-                            <div>
-                                <p class="font-medium">Eu Toco o Alarm</p>
-                                <p class="text-sm text-gray-500">Tom: D | Versão: Clássica</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full font-medium text-sm transition">
-                        Adicionar Selecionadas
-                    </button>
-                </div>
-            </div>
-        </div>
+    <button id="fab" class="fab" aria-label="Adicionar ou buscar cifra">+</button>
+    <div id="fab-menu" class="fab-menu hidden">
+      <button id="fab-buscar" class="fab-menu-btn">🔍 Buscar</button>
+      <button id="fab-camera" class="fab-menu-btn">📷 Tirar foto</button>
+      <button id="fab-upload" class="fab-menu-btn">⬆️ Upload</button>
     </div>
-    
-    <!-- Mode Selection Modal -->
-    <div id="modeModal" class="modal-overlay">
-        <div class="modal-content bg-white rounded-xl w-full max-w-md">
-            <div class="p-5">
-                <div class="flex items-start justify-between">
-                    <h3 class="text-xl font-semibold">Ações rápidas</h3>
-                    <button id="closeMode" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mt-6 flex justify-around items-center">
-                    <button class="flex flex-col items-center text-gray-500 hover:text-green-600 transition" aria-label="Buscar">
-                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                            <i class="fas fa-search fa-lg text-green-600"></i>
-                        </div>
-                        <span class="text-sm">Buscar</span>
-                    </button>
-                    <button class="flex flex-col items-center text-gray-500 hover:text-blue-600 transition" aria-label="Foto">
-                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                            <i class="fas fa-camera fa-lg text-blue-600"></i>
-                        </div>
-                        <span class="text-sm">Foto</span>
-                    </button>
-                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Upload">
-                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-                            <i class="fas fa-cloud-upload-alt fa-lg text-purple-600"></i>
-                        </div>
-                        <span class="text-sm">Upload</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <input id="file-input" type="file" class="hidden" accept="image/*" multiple />
+    <!-- Modal para seleção na nuvem -->
+    <div id="cloud-modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <button id="close-cloud-modal" class="close-modal" aria-label="Fechar">&times;</button>
+        <h2>Cifras na Nuvem</h2>
+        <div id="cloud-list" class="cloud-list"></div>
+        <button id="add-cloud-btn" class="add-btn">Adicionar Selecionadas</button>
+      </div>
     </div>
-    
-    <!-- New Tab Modal -->
-    <div id="newTabModal" class="modal-overlay">
-        <div class="modal-content bg-white rounded-xl w-full max-w-md">
-            <div class="p-5">
-                <div class="flex items-start justify-between">
-                    <h3 class="text-xl font-semibold">Nova Aba</h3>
-                    <button id="closeNewTab" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mt-4">
-                    <div class="mb-5">
-                        <label class="font-medium text-gray-700">Nome da Aba:</label>
-                        <input type="text" class="mt-2 w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Ex: Culto Especial">
-                    </div>
-                    <!-- Removido bloco Visibilidade -->
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition w-full">
-                        Adicionar Aba
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Modal para modo da aba -->
+    <div id="tab-mode-modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <button id="close-tab-mode-modal" class="close-modal" aria-label="Fechar">&times;</button>
+        <h2>Alterar para modo:</h2>
+        <form>
+          <label><input type="radio" name="tab-mode" value="online"> Online</label>
+          <label><input type="radio" name="tab-mode" value="offline"> Offline</label>
+        </form>
+        <button id="save-tab-mode-btn" class="add-btn">Salvar</button>
+      </div>
     </div>
-
-    <script>
-        // Show modal functions
-        document.addEventListener('DOMContentLoaded', function() {
-            // ...outros códigos de modal e tabs...
-
-            // FAB menu toggle
-            const fab = document.getElementById('fab');
-            const fabMenuWrapper = document.getElementById('fab-menu-wrapper');
-            const fabActions = fabMenuWrapper.querySelectorAll('.fab-action');
-            const fabPlusIcon = document.getElementById('fab-plus-icon');
-            let fabOpen = false;
-
-            fab.addEventListener('click', function(e) {
-                e.stopPropagation();
-                fabOpen = !fabOpen;
-                fabActions.forEach((btn, idx) => {
-                    if (fabOpen) {
-                        setTimeout(() => {
-                            btn.classList.remove('opacity-0', 'translate-y-6');
-                            btn.classList.add('opacity-100', 'translate-y-0');
-                        }, idx * 40);
-                    } else {
-                        setTimeout(() => {
-                            btn.classList.add('opacity-0', 'translate-y-6');
-                            btn.classList.remove('opacity-100', 'translate-y-0');
-                        }, (fabActions.length - idx - 1) * 30);
-                    }
-                });
-                // Gira o ícone +
-                if(fabOpen) {
-                    fabPlusIcon.style.transform = 'rotate(45deg)';
-                } else {
-                    fabPlusIcon.style.transform = 'rotate(0deg)';
-                }
-            });
-
-            // Fecha o menu FAB ao clicar fora
-            document.addEventListener('click', function() {
-                if (fabOpen) {
-                    fabOpen = false;
-                    fabActions.forEach((btn) => {
-                        btn.classList.add('opacity-0', 'translate-y-6');
-                        btn.classList.remove('opacity-100', 'translate-y-0');
-                    });
-                    fabPlusIcon.style.transform = 'rotate(0deg)';
-                }
-            });
-
-            // Impede fechar menu ao clicar nos botões do menu
-            fabActions.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    // Adicione aqui as ações de cada botão
-                });
-            });
-
-            // --- Resto do código das modais e tabs ---
-            const cloudModal = document.getElementById('cloudModal');
-            const modeModal = document.getElementById('modeModal');
-            const newTabModal = document.getElementById('newTabModal');
-
-            // Cloud Chords Modal (abrir via outro método se desejar)
-            // Mode Modal (abrir via outro método se desejar)
-
-            // Fechar modals
-            document.getElementById('closeCloud').addEventListener('click', function() {
-                cloudModal.classList.remove('active');
-            });
-            document.getElementById('closeMode').addEventListener('click', function() {
-                modeModal.classList.remove('active');
-            });
-            document.querySelector('.tab-item.text-purple-600').addEventListener('click', function() {
-                newTabModal.classList.add('active');
-            });
-            document.getElementById('closeNewTab').addEventListener('click', function() {
-                newTabModal.classList.remove('active');
-            });
-            // Fechar modais ao clicar fora
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if(e.target === this) {
-                        modal.classList.remove('active');
-                    }
-                });
-            });
-            // Tab switching functionality
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    if(this.classList.contains('text-purple-600')) return;
-                    document.querySelectorAll('.tab-item').forEach(t => {
-                        t.classList.remove('active');
-                        t.classList.add('text-gray-600', 'hover:text-gray-900');
-                    });
-                    this.classList.add('active');
-                    this.classList.remove('text-gray-600', 'hover:text-gray-900');
-                });
-            });
-        });
-    </script>
+    <!-- Modal para adicionar nova aba -->
+    <div id="add-tab-modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <button id="close-add-tab-modal" class="close-modal" aria-label="Fechar">&times;</button>
+        <h2>Nova Aba</h2>
+        <input id="add-tab-name" type="text" placeholder="Nome da nova aba" />
+        <div>
+          <label><input type="radio" name="tab-privacy" value="public" checked> Visível para todos</label>
+          <label><input type="radio" name="tab-privacy" value="local"> Apenas neste dispositivo</label>
+        </div>
+        <button id="save-add-tab-btn" class="add-btn">Adicionar</button>
+      </div>
+    </div>
+    <div id="fullscreen-overlay" class="fullscreen-overlay hidden"></div>
+    <div id="toast" class="toast"></div>
+  </div>
+  <script src="script2.js"></script>
 </body>
 </html>
