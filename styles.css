@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f7f9;
+    overflow-x: hidden;
+}
+
+.tab-item {
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+    border-radius: 3px;
+}
+
+.fab-btn {
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+    transition: all 0.3s ease;
+}
+
+.fab-btn:hover {
+    box-shadow: 0 6px 25px rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 50;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    max-width: 90%;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.chord-card {
+    transition: all 0.2s ease;
+}
+
+.chord-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.action-bar {
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+}
+
+@media (min-width: 640px) {
+    .tab-scroll {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .tab-scroll::-webkit-scrollbar {
+        display: none;
+    }
+}
