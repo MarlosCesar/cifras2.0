@@ -2,24 +2,40 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Viewport melhorada para responsividade mobile, iOS/Android e safe-area -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Cifras 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Web App icons e manifest para iOS/Android -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4f46e5">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
+
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+            /* Safe-area para dispositivos iOS */
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-top: env(safe-area-inset-top);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            background-color: #f5f7f9;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f7f9;
-            overflow-x: hidden;
+            color: #292524;
+            min-height: 100vh;
         }
-        
+
         .tab-item {
             position: relative;
             padding-bottom: 12px;
         }
-        
         .tab-item.active::after {
             content: '';
             position: absolute;
@@ -30,23 +46,25 @@
             background: linear-gradient(90deg, #4f46e5, #8b5cf6);
             border-radius: 3px;
         }
-        
         .fab-btn {
             box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
             transition: all 0.3s ease;
+            min-width: 56px;
+            min-height: 56px;
+            margin-bottom: env(safe-area-inset-bottom, 16px);
+            touch-action: manipulation;
         }
-        
-        .fab-btn:hover {
+        .fab-btn:hover, .fab-btn:focus {
             box-shadow: 0 6px 25px rgba(139, 92, 246, 0.3);
             transform: translateY(-2px);
         }
-        
+
+        input[type="text"], input[type="radio"], input[type="checkbox"], button, .fab-btn {
+            touch-action: manipulation;
+        }
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
@@ -56,74 +74,91 @@
             transition: opacity 0.3s ease;
             z-index: 50;
         }
-        
         .modal-overlay.active {
             opacity: 1;
             pointer-events: all;
         }
-        
         .modal-content {
             transform: translateY(20px);
             transition: transform 0.3s ease;
-            max-width: 90%;
+            max-width: 95vw;
+            width: 100%;
         }
-        
         .modal-overlay.active .modal-content {
             transform: translateY(0);
         }
-        
+
         .chord-card {
             transition: all 0.2s ease;
         }
-        
         .chord-card:hover {
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
-        
-        .action-bar {
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+
+        /* Scrolling para tabs e cards */
+        .tab-scroll {
+            overflow-x: auto;
+            scrollbar-width: none;
         }
-        
-        @media (min-width: 640px) {
-            .tab-scroll {
-                overflow-x: auto;
-                scrollbar-width: none;
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Mobile first: ajustes para telas pequenas */
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 12px !important;
             }
-            
-            .tab-scroll::-webkit-scrollbar {
-                display: none;
+            .chord-card {
+                margin-bottom: 16px;
+            }
+            .fab-btn {
+                right: 16px !important;
+                bottom: 24px !important;
+            }
+            .modal-content {
+                max-width: 98vw;
+            }
+        }
+
+        /* Tablets */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .main-content {
+                padding: 24px !important;
             }
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
     <!-- Header -->
-    <header class="sticky top-0 z-30 bg-white shadow-sm">
+    <header class="sticky top-0 z-30 bg-white shadow-sm" style="padding-top: env(safe-area-inset-top)">
         <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
                 <div class="flex items-center">
                     <div class="text-purple-600 text-2xl font-bold">
                         Cifras <span class="bg-purple-600 text-white text-sm px-1 py-0.5 rounded">2.0</span>
                     </div>
                 </div>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
+                <div class="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto mt-2 sm:mt-0">
+                    <div class="relative flex-1 sm:flex-none">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
-                        <input type="text" placeholder="Buscar cifra..." class="pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                        <input 
+                            type="text" 
+                            placeholder="Buscar cifra..." 
+                            class="pl-10 pr-4 py-2 w-full bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+                            style="min-width: 0;"
+                        >
                     </div>
-                    
                     <div class="h-8 w-8 rounded-full bg-gray-200 border-2 border-dashed flex items-center justify-center">
                         <i class="fas fa-user text-gray-500"></i>
                     </div>
                 </div>
             </div>
-            
             <!-- Tabs Navigation -->
             <div class="mt-4 pb-1 tab-scroll">
-                <div class="flex space-x-8 min-w-max">
+                <div class="flex space-x-4 sm:space-x-8 min-w-max">
                     <button class="tab-item text-sm font-medium active">
                         Domingo Manhã
                     </button>
@@ -139,7 +174,7 @@
                     <button class="tab-item text-sm font-medium text-gray-600 hover:text-gray-900">
                         Santa Ceia
                     </button>
-                    <button class="tab-item text-purple-600">
+                    <button class="tab-item text-purple-600" aria-label="Adicionar Aba">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
@@ -148,7 +183,7 @@
     </header>
     
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-6 min-h-[80vh]">
+    <main class="container mx-auto px-4 py-6 main-content min-h-[80vh]">
         <!-- Empty State -->
         <div class="max-w-2xl mx-auto text-center py-16">
             <div class="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-6 flex items-center justify-center">
@@ -159,43 +194,43 @@
             <p class="text-gray-500 mb-8">Comece importando ou criando uma nova cifra para iniciar sua coleção</p>
             
             <!-- Chord Action Buttons -->
-            <div class="flex justify-center space-x-4">
-                <button class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow hover:bg-green-600">
+            <div class="flex flex-wrap justify-center gap-2 sm:gap-4">
+                <button class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow hover:bg-green-600 transition" aria-label="Confirmar">
                     <i class="fas fa-check"></i>
                 </button>
-                <button class="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow hover:bg-red-600">
+                <button class="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow hover:bg-red-600 transition" aria-label="Cancelar">
                     <i class="fas fa-times"></i>
                 </button>
-                <button class="w-12 h-12 rounded-full bg-yellow-500 text-white flex items-center justify-center shadow hover:bg-yellow-600">
+                <button class="w-12 h-12 rounded-full bg-yellow-500 text-white flex items-center justify-center shadow hover:bg-yellow-600 transition" aria-label="Excluir">
                     <i class="fas fa-trash-alt"></i>
                 </button>
-                <button class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow hover:bg-blue-600">
+                <button class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow hover:bg-blue-600 transition" aria-label="Editar">
                     <i class="fas fa-pen"></i>
                 </button>
-                <button class="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center shadow hover:bg-purple-600">
+                <button class="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center shadow hover:bg-purple-600 transition" aria-label="Enviar">
                     <i class="fas fa-arrow-up"></i>
                 </button>
             </div>
         </div>
         
         <!-- Floating Action Button -->
-        <button id="fab" class="fixed bottom-20 right-4 md:right-8 w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn">
+        <button id="fab" class="fixed bottom-20 right-4 md:right-8 w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn z-40" aria-label="Adicionar cifra">
             <i class="fas fa-plus text-2xl"></i>
         </button>
         
         <!-- Chord Display Section (Hidden by default) -->
         <div class="hidden" id="chordsContainer">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center space-x-4">
-                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center" aria-label="Anterior">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <h2 class="text-xl font-bold">Domingo Manhã</h2>
-                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center">
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center" aria-label="Próximo">
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
-                <button class="text-purple-600 hover:text-purple-800 flex items-center">
+                <button class="text-purple-600 hover:text-purple-800 flex items-center" aria-label="Editar Aba">
                     <i class="fas fa-edit mr-2"></i> Editar
                 </button>
             </div>
@@ -207,10 +242,10 @@
                         <div class="flex justify-between items-start">
                             <h3 class="font-medium text-lg">Hosana</h3>
                             <div class="flex items-center">
-                                <button class="text-indigo-500 hover:text-indigo-700 p-1">
+                                <button class="text-indigo-500 hover:text-indigo-700 p-1" aria-label="Editar cifra">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="text-red-500 hover:text-red-700 p-1 ml-1">
+                                <button class="text-red-500 hover:text-red-700 p-1 ml-1" aria-label="Excluir cifra">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -233,8 +268,7 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- More chord cards would be here -->
+                <!-- More chord cards here -->
             </div>
         </div>
     </main>
@@ -246,11 +280,10 @@
             <div class="p-5">
                 <div class="flex items-start justify-between">
                     <h3 class="text-xl font-semibold">Cifras na Nuvem</h3>
-                    <button id="closeCloud" class="text-gray-500 hover:text-gray-700">
+                    <button id="closeCloud" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
                 <div class="mt-4">
                     <ul class="divide-y">
                         <li class="py-3 flex items-center">
@@ -276,7 +309,6 @@
                         </li>
                     </ul>
                 </div>
-                
                 <div class="mt-6 flex justify-end">
                     <button class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-full font-medium text-sm transition">
                         Adicionar Selecionadas
@@ -292,24 +324,24 @@
             <div class="p-5">
                 <div class="flex items-start justify-between">
                     <h3 class="text-xl font-semibold">Ações rápidas</h3>
-                    <button id="closeMode" class="text-gray-500 hover:text-gray-700">
+                    <button id="closeMode" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="mt-6 flex justify-around items-center">
-                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
+                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Buscar">
                         <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                             <i class="fas fa-search fa-lg"></i>
                         </div>
                         <span class="text-sm">Buscar</span>
                     </button>
-                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
+                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Foto">
                         <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                             <i class="fas fa-camera fa-lg"></i>
                         </div>
                         <span class="text-sm">Foto</span>
                     </button>
-                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
+                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Upload">
                         <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                             <i class="fas fa-cloud-upload-alt fa-lg"></i>
                         </div>
@@ -326,20 +358,17 @@
             <div class="p-5">
                 <div class="flex items-start justify-between">
                     <h3 class="text-xl font-semibold">Nova Aba</h3>
-                    <button id="closeNewTab" class="text-gray-500 hover:text-gray-700">
+                    <button id="closeNewTab" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
                 <div class="mt-4">
                     <div class="mb-5">
                         <label class="font-medium text-gray-700">Nome da Aba:</label>
                         <input type="text" class="mt-2 w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Ex: Culto Especial">
                     </div>
-                    
                     <div class="mb-5">
                         <label class="font-medium text-gray-700 block mb-3">Visibilidade:</label>
-                        
                         <div class="space-y-3">
                             <div class="flex items-center">
                                 <input type="radio" name="visibility" id="all" class="h-4 w-4 text-purple-600 focus:ring-purple-500" checked>
@@ -352,7 +381,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="mt-6 flex justify-end">
                     <button class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition w-full">
                         Adicionar Aba
@@ -361,7 +389,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // Show modal functions
         document.addEventListener('DOMContentLoaded', function() {
@@ -374,30 +402,24 @@
             fab.addEventListener('click', function() {
                 cloudModal.classList.add('active');
             });
-            
             document.getElementById('closeCloud').addEventListener('click', function() {
                 cloudModal.classList.remove('active');
             });
-            
             // Mode Modal
             document.querySelectorAll('.fab-btn')[0].addEventListener('click', function() {
                 cloudModal.classList.remove('active');
                 modeModal.classList.add('active');
             });
-            
             document.getElementById('closeMode').addEventListener('click', function() {
                 modeModal.classList.remove('active');
             });
-            
             // New Tab Modal
             document.querySelector('.tab-item.text-purple-600').addEventListener('click', function() {
                 newTabModal.classList.add('active');
             });
-            
             document.getElementById('closeNewTab').addEventListener('click', function() {
                 newTabModal.classList.remove('active');
             });
-            
             // Close modals when clicking outside
             document.querySelectorAll('.modal-overlay').forEach(modal => {
                 modal.addEventListener('click', function(e) {
@@ -406,19 +428,16 @@
                     }
                 });
             });
-            
             // Tab switching functionality
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.addEventListener('click', function() {
                     // Don't toggle the plus button
                     if(this.classList.contains('text-purple-600')) return;
-                    
                     // Update active tab
                     document.querySelectorAll('.tab-item').forEach(t => {
                         t.classList.remove('active');
                         t.classList.add('text-gray-600', 'hover:text-gray-900');
                     });
-                    
                     this.classList.add('active');
                     this.classList.remove('text-gray-600', 'hover:text-gray-900');
                 });
