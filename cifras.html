@@ -232,18 +232,27 @@
         
         <!-- Floating Action Button Menu -->
         <div class="fixed z-50 right-4 md:right-8 bottom-20 flex flex-col items-end space-y-3 pointer-events-none" id="fab-menu-wrapper" style="margin-bottom:env(safe-area-inset-bottom,16px);">
-            <!-- FAB child buttons, ocultos por padrão -->
-            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex flex-col items-center text-gray-700 bg-white shadow rounded-full h-12 w-12 mb-1 hover:bg-purple-100"
+            <!-- FAB child buttons: agora com ícones coloridos e nomes -->
+            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex items-center bg-white shadow rounded-full h-12 px-4 mb-1 hover:bg-purple-50"
                 id="fab-search" aria-label="Buscar">
-                <i class="fas fa-search fa-lg"></i>
+                <span class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                    <i class="fas fa-search fa-lg text-green-600"></i>
+                </span>
+                <span class="text-base font-medium text-gray-700 pr-2">Buscar</span>
             </button>
-            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex flex-col items-center text-gray-700 bg-white shadow rounded-full h-12 w-12 mb-1 hover:bg-purple-100"
+            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex items-center bg-white shadow rounded-full h-12 px-4 mb-1 hover:bg-purple-50"
                 id="fab-photo" aria-label="Foto">
-                <i class="fas fa-camera fa-lg"></i>
+                <span class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                    <i class="fas fa-camera fa-lg text-blue-600"></i>
+                </span>
+                <span class="text-base font-medium text-gray-700 pr-2">Foto</span>
             </button>
-            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex flex-col items-center text-gray-700 bg-white shadow rounded-full h-12 w-12 mb-1 hover:bg-purple-100"
+            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex items-center bg-white shadow rounded-full h-12 px-4 mb-1 hover:bg-purple-50"
                 id="fab-upload" aria-label="Upload">
-                <i class="fas fa-cloud-upload-alt fa-lg"></i>
+                <span class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                    <i class="fas fa-cloud-upload-alt fa-lg text-purple-600"></i>
+                </span>
+                <span class="text-base font-medium text-gray-700 pr-2">Upload</span>
             </button>
             <!-- FAB principal -->
             <button id="fab" class="pointer-events-auto w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn shadow-lg focus:outline-none"
@@ -363,21 +372,21 @@
                     </button>
                 </div>
                 <div class="mt-6 flex justify-around items-center">
-                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Buscar">
-                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                            <i class="fas fa-search fa-lg"></i>
+                    <button class="flex flex-col items-center text-gray-500 hover:text-green-600 transition" aria-label="Buscar">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                            <i class="fas fa-search fa-lg text-green-600"></i>
                         </div>
                         <span class="text-sm">Buscar</span>
                     </button>
-                    <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Foto">
-                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                            <i class="fas fa-camera fa-lg"></i>
+                    <button class="flex flex-col items-center text-gray-500 hover:text-blue-600 transition" aria-label="Foto">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                            <i class="fas fa-camera fa-lg text-blue-600"></i>
                         </div>
                         <span class="text-sm">Foto</span>
                     </button>
                     <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition" aria-label="Upload">
-                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                            <i class="fas fa-cloud-upload-alt fa-lg"></i>
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                            <i class="fas fa-cloud-upload-alt fa-lg text-purple-600"></i>
                         </div>
                         <span class="text-sm">Upload</span>
                     </button>
@@ -464,8 +473,7 @@
             fabActions.forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    // Adicione aqui as ações de cada botão, ex:
-                    // if(this.id === 'fab-search'){ ... }
+                    // Adicione aqui as ações de cada botão
                 });
             });
 
