@@ -179,9 +179,22 @@
         </div>
         
         <!-- Floating Action Button -->
-        <button id="fab" class="fixed bottom-20 right-4 md:right-8 w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn">
+        <button id="fab" class="fixed bottom-20 right-4 md:right-8 w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn z-50">
             <i class="fas fa-plus text-2xl"></i>
         </button>
+
+        <!-- Speed Dial Menu (inicialmente hidden) -->
+        <div id="fabMenu" class="fixed bottom-36 right-4 md:right-8 flex flex-col items-end space-y-3 hidden z-40">
+            <button class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center shadow hover:bg-green-600" title="Buscar">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center shadow hover:bg-pink-600" title="Foto">
+                <i class="fas fa-camera"></i>
+            </button>
+            <button class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow hover:bg-blue-600" title="Upload">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </button>
+        </div>
         
         <!-- Chord Display Section (Hidden by default) -->
         <div class="hidden" id="chordsContainer">
@@ -238,30 +251,6 @@
             </div>
         </div>
     </main>
-    
-    <!-- Action Bar -->
-    <div class="action-bar fixed bottom-0 left-0 right-0 bg-white border-t py-3 px-6">
-        <div class="flex justify-around items-center">
-            <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-search fa-lg"></i>
-                </div>
-                <span class="text-xs mt-1">Buscar</span>
-            </button>
-            <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-camera fa-lg"></i>
-                </div>
-                <span class="text-xs mt-1">Foto</span>
-            </button>
-            <button class="flex flex-col items-center text-gray-500 hover:text-purple-600 transition">
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-cloud-upload-alt fa-lg"></i>
-                </div>
-                <span class="text-xs mt-1">Upload</span>
-            </button>
-        </div>
-    </div>
     
     <!-- Modals -->
     <!-- Cloud Chords Modal -->
@@ -381,21 +370,7 @@
                         <label class="font-medium text-gray-700">Nome da Aba:</label>
                         <input type="text" class="mt-2 w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Ex: Culto Especial">
                     </div>
-                    
-                    <div class="mb-5">
-                        <label class="font-medium text-gray-700 block mb-3">Visibilidade:</label>
-                        
-                        <div class="space-y-3">
-                            <div class="flex items-center">
-                                <input type="radio" name="visibility" id="all" class="h-4 w-4 text-purple-600 focus:ring-purple-500" checked>
-                                <label for="all" class="ml-3 block text-gray-700">Visível para todos</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="radio" name="visibility" id="private" class="h-4 w-4 text-purple-600 focus:ring-purple-500">
-                                <label for="private" class="ml-3 block text-gray-700">Apenas neste dispositivo</label>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Visibilidade removida conforme solicitado -->
                 </div>
                 
                 <div class="mt-6 flex justify-end">
@@ -411,15 +386,43 @@
         // Show modal functions
         document.addEventListener('DOMContentLoaded', function() {
             const fab = document.getElementById('fab');
+            const fabMenu = document.getElementById('fabMenu');
             const cloudModal = document.getElementById('cloudModal');
             const modeModal = document.getElementById('modeModal');
             const newTabModal = document.getElementById('newTabModal');
             
+            // Toggle Speed Dial Menu
+            fab.addEventListener('click', function(e) {
+                e.stopPropagation();
+                fabMenu.classList.toggle('hidden');
+            });
+
+            // Fechar o menu se clicar fora dele
+            document.addEventListener('click', function(e) {
+                if (!fab.contains(e.target) && !fabMenu.contains(e.target)) {
+                    fabMenu.classList.add('hidden');
+                }
+            });
+
             // Cloud Chords Modal
-            fab.addEventListener('click', function() {
+            // Exemplo: ao clicar em algum botão do fabMenu, pode abrir o modal
+            // fabMenu.children[0] = Buscar | fabMenu.children[1] = Foto | fabMenu.children[2] = Upload
+            fabMenu.children[0].addEventListener('click', function(e) {
+                e.stopPropagation();
+                fabMenu.classList.add('hidden');
                 cloudModal.classList.add('active');
             });
-            
+            fabMenu.children[1].addEventListener('click', function(e) {
+                e.stopPropagation();
+                fabMenu.classList.add('hidden');
+                alert("Abrir câmera para Foto (implementar funcionalidade)");
+            });
+            fabMenu.children[2].addEventListener('click', function(e) {
+                e.stopPropagation();
+                fabMenu.classList.add('hidden');
+                alert("Abrir upload de arquivo (implementar funcionalidade)");
+            });
+
             document.getElementById('closeCloud').addEventListener('click', function() {
                 cloudModal.classList.remove('active');
             });
