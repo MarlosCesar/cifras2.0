@@ -127,6 +127,23 @@
                 padding: 24px !important;
             }
         }
+
+        /* Fab menu custom styles */
+        .fab-action {
+            opacity: 0;
+            transform: translateY(24px);
+            pointer-events: none;
+        }
+        .fab-action.opacity-100 {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
+        }
+        .fab-action.opacity-0 {
+            opacity: 0 !important;
+            transform: translateY(24px) !important;
+            pointer-events: none !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -213,11 +230,28 @@
             </div>
         </div>
         
-        <!-- Floating Action Button -->
-        <button id="fab" class="fixed bottom-20 right-4 md:right-8 w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn z-40" aria-label="Adicionar cifra">
-            <i class="fas fa-plus text-2xl"></i>
-        </button>
-        
+        <!-- Floating Action Button Menu -->
+        <div class="fixed z-50 right-4 md:right-8 bottom-20 flex flex-col items-end space-y-3 pointer-events-none" id="fab-menu-wrapper" style="margin-bottom:env(safe-area-inset-bottom,16px);">
+            <!-- FAB child buttons, ocultos por padrão -->
+            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex flex-col items-center text-gray-700 bg-white shadow rounded-full h-12 w-12 mb-1 hover:bg-purple-100"
+                id="fab-search" aria-label="Buscar">
+                <i class="fas fa-search fa-lg"></i>
+            </button>
+            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex flex-col items-center text-gray-700 bg-white shadow rounded-full h-12 w-12 mb-1 hover:bg-purple-100"
+                id="fab-photo" aria-label="Foto">
+                <i class="fas fa-camera fa-lg"></i>
+            </button>
+            <button class="fab-action pointer-events-auto opacity-0 translate-y-6 transition-all duration-200 flex flex-col items-center text-gray-700 bg-white shadow rounded-full h-12 w-12 mb-1 hover:bg-purple-100"
+                id="fab-upload" aria-label="Upload">
+                <i class="fas fa-cloud-upload-alt fa-lg"></i>
+            </button>
+            <!-- FAB principal -->
+            <button id="fab" class="pointer-events-auto w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full flex items-center justify-center fab-btn shadow-lg focus:outline-none"
+                aria-label="Ações rápidas">
+                <i class="fas fa-plus text-2xl transition-transform duration-200" id="fab-plus-icon"></i>
+            </button>
+        </div>
+
         <!-- Chord Display Section (Hidden by default) -->
         <div class="hidden" id="chordsContainer">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
@@ -354,61 +388,109 @@
     
     <!-- New Tab Modal -->
     <div id="newTabModal" class="modal-overlay">
-    <div class="modal-content bg-white rounded-xl w-full max-w-md">
-        <div class="p-5">
-            <div class="flex items-start justify-between">
-                <h3 class="text-xl font-semibold">Nova Aba</h3>
-                <button id="closeNewTab" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="mt-4">
-                <div class="mb-5">
-                    <label class="font-medium text-gray-700">Nome da Aba:</label>
-                    <input type="text" class="mt-2 w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Ex: Culto Especial">
+        <div class="modal-content bg-white rounded-xl w-full max-w-md">
+            <div class="p-5">
+                <div class="flex items-start justify-between">
+                    <h3 class="text-xl font-semibold">Nova Aba</h3>
+                    <button id="closeNewTab" class="text-gray-500 hover:text-gray-700" aria-label="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <!-- As opções de visibilidade foram removidas daqui -->
-            </div>
-            <div class="mt-6 flex justify-end">
-                <button class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition w-full">
-                    Adicionar Aba
-                </button>
+                <div class="mt-4">
+                    <div class="mb-5">
+                        <label class="font-medium text-gray-700">Nome da Aba:</label>
+                        <input type="text" class="mt-2 w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="Ex: Culto Especial">
+                    </div>
+                    <!-- Removido bloco Visibilidade -->
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition w-full">
+                        Adicionar Aba
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         // Show modal functions
         document.addEventListener('DOMContentLoaded', function() {
+            // ...outros códigos de modal e tabs...
+
+            // FAB menu toggle
             const fab = document.getElementById('fab');
+            const fabMenuWrapper = document.getElementById('fab-menu-wrapper');
+            const fabActions = fabMenuWrapper.querySelectorAll('.fab-action');
+            const fabPlusIcon = document.getElementById('fab-plus-icon');
+            let fabOpen = false;
+
+            fab.addEventListener('click', function(e) {
+                e.stopPropagation();
+                fabOpen = !fabOpen;
+                fabActions.forEach((btn, idx) => {
+                    if (fabOpen) {
+                        setTimeout(() => {
+                            btn.classList.remove('opacity-0', 'translate-y-6');
+                            btn.classList.add('opacity-100', 'translate-y-0');
+                        }, idx * 40);
+                    } else {
+                        setTimeout(() => {
+                            btn.classList.add('opacity-0', 'translate-y-6');
+                            btn.classList.remove('opacity-100', 'translate-y-0');
+                        }, (fabActions.length - idx - 1) * 30);
+                    }
+                });
+                // Gira o ícone +
+                if(fabOpen) {
+                    fabPlusIcon.style.transform = 'rotate(45deg)';
+                } else {
+                    fabPlusIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // Fecha o menu FAB ao clicar fora
+            document.addEventListener('click', function() {
+                if (fabOpen) {
+                    fabOpen = false;
+                    fabActions.forEach((btn) => {
+                        btn.classList.add('opacity-0', 'translate-y-6');
+                        btn.classList.remove('opacity-100', 'translate-y-0');
+                    });
+                    fabPlusIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // Impede fechar menu ao clicar nos botões do menu
+            fabActions.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Adicione aqui as ações de cada botão, ex:
+                    // if(this.id === 'fab-search'){ ... }
+                });
+            });
+
+            // --- Resto do código das modais e tabs ---
             const cloudModal = document.getElementById('cloudModal');
             const modeModal = document.getElementById('modeModal');
             const newTabModal = document.getElementById('newTabModal');
-            
-            // Cloud Chords Modal
-            fab.addEventListener('click', function() {
-                cloudModal.classList.add('active');
-            });
+
+            // Cloud Chords Modal (abrir via outro método se desejar)
+            // Mode Modal (abrir via outro método se desejar)
+
+            // Fechar modals
             document.getElementById('closeCloud').addEventListener('click', function() {
                 cloudModal.classList.remove('active');
-            });
-            // Mode Modal
-            document.querySelectorAll('.fab-btn')[0].addEventListener('click', function() {
-                cloudModal.classList.remove('active');
-                modeModal.classList.add('active');
             });
             document.getElementById('closeMode').addEventListener('click', function() {
                 modeModal.classList.remove('active');
             });
-            // New Tab Modal
             document.querySelector('.tab-item.text-purple-600').addEventListener('click', function() {
                 newTabModal.classList.add('active');
             });
             document.getElementById('closeNewTab').addEventListener('click', function() {
                 newTabModal.classList.remove('active');
             });
-            // Close modals when clicking outside
+            // Fechar modais ao clicar fora
             document.querySelectorAll('.modal-overlay').forEach(modal => {
                 modal.addEventListener('click', function(e) {
                     if(e.target === this) {
@@ -419,9 +501,7 @@
             // Tab switching functionality
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.addEventListener('click', function() {
-                    // Don't toggle the plus button
                     if(this.classList.contains('text-purple-600')) return;
-                    // Update active tab
                     document.querySelectorAll('.tab-item').forEach(t => {
                         t.classList.remove('active');
                         t.classList.add('text-gray-600', 'hover:text-gray-900');
