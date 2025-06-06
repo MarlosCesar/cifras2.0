@@ -6,81 +6,130 @@ body {
     overflow-x: hidden;
 }
 
-.tab-item {
+/* Tab styles */
+.tab {
     position: relative;
-    padding-bottom: 12px;
+    background: none;
+    outline: none;
+    border: none;
+    padding: 8px 20px 12px 20px;
+    font-weight: 500;
+    border-radius: 0.5rem 0.5rem 0 0;
+    transition: background 0.2s, color 0.2s;
+    color: #6b7280;
+}
+.tab.active {
+    color: #4f46e5;
+    background: #eef2ff;
+}
+.tab.offline { /* offline visual if you like */ }
+.tab.online { /* online visual if you like */ }
+.tab-more {
+    margin-left: 8px;
+    color: #bbb;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+.tab-add {
+    background: none;
+    border: none;
+    color: #8b5cf6;
+    font-size: 1.3em;
+    font-weight: bold;
+    padding: 0 10px;
+    cursor: pointer;
+}
+.tab-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.tab-scroll::-webkit-scrollbar {
+    display: none;
 }
 
-.tab-item.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 10%;
-    right: 10%;
-    height: 3px;
-    background: linear-gradient(90deg, #4f46e5, #8b5cf6);
-    border-radius: 3px;
+/* Cifra cards */
+.cifra-container {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s;
+    position: relative;
+}
+.cifra-container.selected {
+    border: 2px solid #8b5cf6;
+    box-shadow: 0 4px 16px rgba(139,92,246,0.09);
+}
+.cifra-img {
+    width: 100%;
+    max-width: 220px;
+    height: 300px;
+    object-fit: contain;
+    background: #f4f4f4;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5em;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.cifra-title {
+    font-size: 1.1em;
+    color: #4b5563;
+    margin-top: 0.3em;
+    word-break: break-all;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Modal */
+.modal { display: flex; }
+.modal.hidden { display: none; }
+.modal-content { animation: modalIn .2s; }
+@keyframes modalIn { from { opacity: 0; transform: scale(.9);} to { opacity: 1; transform: scale(1);} }
+
+/* Toast */
+#toast.show {
+    opacity: 1 !important;
+    transition: opacity 0.3s;
+}
+#toast {
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
 .fab-btn {
     box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
     transition: all 0.3s ease;
 }
-
 .fab-btn:hover {
     box-shadow: 0 6px 25px rgba(139, 92, 246, 0.3);
     transform: translateY(-2px);
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.6);
+/* Fullscreen overlay */
+#fullscreen-overlay .fullscreen-img-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    z-index: 50;
+    width: 90vw;
+    height: 90vh;
 }
-
-.modal-overlay.active {
-    opacity: 1;
-    pointer-events: all;
+#fullscreen-overlay .fullscreen-img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
-
-.modal-content {
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
-    max-width: 90%;
-}
-
-.modal-overlay.active .modal-content {
-    transform: translateY(0);
-}
-
-.chord-card {
-    transition: all 0.2s ease;
-}
-
-.chord-card:hover {
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-
-.action-bar {
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
-}
-
-@media (min-width: 640px) {
-    .tab-scroll {
-        overflow-x: auto;
-        scrollbar-width: none;
-    }
-    .tab-scroll::-webkit-scrollbar {
-        display: none;
-    }
+#fullscreen-overlay .close-fullscreen {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    font-size: 2.4em;
+    color: #fff;
+    background: none;
+    border: none;
+    z-index: 100;
+    cursor: pointer;
 }
