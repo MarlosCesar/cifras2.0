@@ -436,49 +436,10 @@
       setupEventListeners();
       
       function loadMusicData() {
-        // Simulação de carregamento de dados
-        // Na implementação real, isso viria da sua API ou Google Drive
-        state.musicas = [
-          { 
-            id: "1abc123",
-            title: "Imagine", 
-            artist: "John Lennon",
-            image: "https://via.placeholder.com/300x180/8b5cf6/ffffff?text=Imagine",
-            cifra: "https://drive.google.com/thumbnail?id=1abc123&sz=w1000",
-            driveId: "1abc123",
-            type: "digitada"
-          },
-          { 
-            id: "2def456",
-            title: "Bohemian Rhapsody", 
-            artist: "Queen",
-            image: "https://via.placeholder.com/300x180/4f46e5/ffffff?text=Bohemian+Rhapsody",
-            cifra: "https://drive.google.com/thumbnail?id=2def456&sz=w1000",
-            driveId: "2def456",
-            type: "manuscrita"
-          },
-          { 
-            id: "3ghi789",
-            title: "Hotel California", 
-            artist: "Eagles",
-            image: "https://via.placeholder.com/300x180/7c3aed/ffffff?text=Hotel+California",
-            cifra: "https://drive.google.com/thumbnail?id=3ghi789&sz=w1000",
-            driveId: "3ghi789",
-            type: "digitada"
-          },
-          { 
-            id: "4jkl012",
-            title: "Yesterday", 
-            artist: "The Beatles",
-            image: "https://via.placeholder.com/300x180/6d28d9/ffffff?text=Yesterday",
-            cifra: "https://drive.google.com/thumbnail?id=4jkl012&sz=w1000",
-            driveId: "4jkl012",
-            type: "manuscrita"
-          }
-        ];
-        
-        renderMusicGrid(state.musicas);
-      }
+  // Removido conteúdo estático. Música será carregada da nuvem.
+  state.musicas = [];
+  renderMusicGrid(state.musicas);
+}
       
       function setupEventListeners() {
         // Busca
