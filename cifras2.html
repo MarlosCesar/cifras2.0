@@ -619,10 +619,11 @@
       }
       
       function closeFabMenuOnClickOutside(e) {
-        if (!fabMenu.contains(e.target) {
-          fabMenu.classList.remove('show');
-        }
-      }
+  if (!fabMenu.contains(e.target)) {
+    fabMenu.classList.remove('show');
+  }
+}
+
       
       async function handleUpload() {
         fabMenu.classList.remove('show');
