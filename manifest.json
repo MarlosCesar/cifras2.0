@@ -2,7 +2,7 @@
   "name": "Cifras 2.0",
   "short_name": "Cifras",
   "description": "Seu aplicativo de cifras moderno",
-  "start_url": "Cifras2.html",
+  "start_url": "cifras2.html",
   "display": "standalone",
   "background_color": "#f5f8f8",
   "theme_color": "#1a202c",
