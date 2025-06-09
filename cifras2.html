@@ -6,8 +6,8 @@
   <meta name="description" content="Aplicativo de cifras com visualização aprimorada"/>
   <meta name="theme-color" content="#8b5cf6"/>
   <title>Cifras - Visualizador Avançado</title>
-  <link rel="manifest" href="manifest2.json" />
-  <link rel="icon" type="image/svg+xml" href="favicon2.svg" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" />
   <style>
@@ -43,6 +43,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
     
     .logo {
@@ -69,6 +71,34 @@
     
     #search-input:focus {
       box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+    }
+    
+    .search-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 100;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+    }
+    
+    .search-dropdown.show {
+      display: block;
+    }
+    
+    .search-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .search-item:hover {
+      background-color: #f5f5f5;
     }
     
     .music-grid {
@@ -208,6 +238,60 @@
       font-size: 0.9rem;
     }
     
+    /* FAB Button */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+    
+    .fab-menu {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+    
+    .fab-menu.show {
+      display: flex;
+    }
+    
+    .fab-menu-btn {
+      background: none;
+      border: none;
+      padding: 8px 15px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 6px;
+    }
+    
+    .fab-menu-btn:hover {
+      background: #f5f5f5;
+    }
+    
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -235,6 +319,19 @@
         height: 35px;
         font-size: 1rem;
       }
+      
+      .fab {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        bottom: 20px;
+        right: 20px;
+      }
+      
+      .fab-menu {
+        bottom: 80px;
+        right: 20px;
+      }
     }
   </style>
 </head>
@@ -249,43 +346,13 @@
           placeholder="Buscar cifras por música ou artista..." 
           autocomplete="off"
         />
+        <div class="search-dropdown" id="search-dropdown"></div>
       </div>
     </header>
     
     <main>
       <div class="music-grid" id="music-grid">
         <!-- As músicas serão carregadas dinamicamente aqui -->
-        <div class="music-card">
-          <img src="https://via.placeholder.com/300x180/8b5cf6/ffffff?text=Imagine" alt="Imagine">
-          <div class="music-info">
-            <h3 class="music-title">Imagine</h3>
-            <p class="music-artist">John Lennon</p>
-          </div>
-        </div>
-        
-        <div class="music-card">
-          <img src="https://via.placeholder.com/300x180/4f46e5/ffffff?text=Bohemian+Rhapsody" alt="Bohemian Rhapsody">
-          <div class="music-info">
-            <h3 class="music-title">Bohemian Rhapsody</h3>
-            <p class="music-artist">Queen</p>
-          </div>
-        </div>
-        
-        <div class="music-card">
-          <img src="https://via.placeholder.com/300x180/7c3aed/ffffff?text=Hotel+California" alt="Hotel California">
-          <div class="music-info">
-            <h3 class="music-title">Hotel California</h3>
-            <p class="music-artist">Eagles</p>
-          </div>
-        </div>
-        
-        <div class="music-card">
-          <img src="https://via.placeholder.com/300x180/6d28d9/ffffff?text=Yesterday" alt="Yesterday">
-          <div class="music-info">
-            <h3 class="music-title">Yesterday</h3>
-            <p class="music-artist">The Beatles</p>
-          </div>
-        </div>
       </div>
     </main>
     
@@ -310,47 +377,46 @@
       </div>
     </div>
     
+    <!-- FAB Button -->
+    <button class="fab" id="fab">
+      <i class="fas fa-plus"></i>
+    </button>
+    
+    <!-- FAB Menu -->
+    <div class="fab-menu" id="fab-menu">
+      <button class="fab-menu-btn" id="fab-upload">
+        <i class="fas fa-upload"></i> Enviar cifra
+      </button>
+      <button class="fab-menu-btn" id="fab-camera">
+        <i class="fas fa-camera"></i> Tirar foto
+      </button>
+    </div>
+    
     <footer>
       © 2025 Desenvolvido por Marlos Cesar - Todos os direitos reservados
     </footer>
   </div>
 
   <script>
+    // Configurações do Google Drive
+    const GOOGLE_DRIVE_FOLDER_ID = "1OzrvB4NCBRTDgMsE_AhQy0b11bdn3v82";
+    const GOOGLE_API_KEY = "AIzaSyD2qLxX7fYIMxt34aeWWDsx_nWaSsFCguk";
+    const GOOGLE_CLIENT_ID = "977942417278-0mfg7iehelnjfqmk5a32elsr7ll8hkil.apps.googleusercontent.com";
+    const GOOGLE_SCOPES = "https://www.googleapis.com/auth/drive.file";
+    
+    // Estado da aplicação
+    let state = {
+      musicas: [],
+      searchResults: [],
+      currentCifra: null,
+      currentZoom: 1,
+      isDragging: false
+    };
+    
     document.addEventListener('DOMContentLoaded', function() {
-      // Dados de exemplo (substitua pela sua lógica de busca real)
-      const musicData = [
-        { 
-          id: 1,
-          title: "Imagine", 
-          artist: "John Lennon",
-          image: "https://via.placeholder.com/300x180/8b5cf6/ffffff?text=Imagine",
-          cifra: "https://via.placeholder.com/800x1200/ffffff/8b5cf6?text=Cifra+Digitada+Imagine"
-        },
-        { 
-          id: 2,
-          title: "Bohemian Rhapsody", 
-          artist: "Queen",
-          image: "https://via.placeholder.com/300x180/4f46e5/ffffff?text=Bohemian+Rhapsody",
-          cifra: "https://via.placeholder.com/800x1200/fffff0/e74c3c?text=Cifra+Manuscrita+Bohemian"
-        },
-        { 
-          id: 3,
-          title: "Hotel California", 
-          artist: "Eagles",
-          image: "https://via.placeholder.com/300x180/7c3aed/ffffff?text=Hotel+California",
-          cifra: "https://via.placeholder.com/800x1200/ffffff/8b5cf6?text=Cifra+Digitada+Hotel+California"
-        },
-        { 
-          id: 4,
-          title: "Yesterday", 
-          artist: "The Beatles",
-          image: "https://via.placeholder.com/300x180/6d28d9/ffffff?text=Yesterday",
-          cifra: "https://via.placeholder.com/800x1200/fffff0/e74c3c?text=Cifra+Manuscrita+Yesterday"
-        }
-      ];
-      
       // Elementos do DOM
       const searchInput = document.getElementById('search-input');
+      const searchDropdown = document.getElementById('search-dropdown');
       const musicGrid = document.getElementById('music-grid');
       const cifraViewer = document.getElementById('cifra-viewer');
       const cifraTitle = document.getElementById('cifra-title');
@@ -360,13 +426,89 @@
       const zoomOutBtn = document.getElementById('zoom-out');
       const zoomResetBtn = document.getElementById('zoom-reset');
       const zoomLevel = document.getElementById('zoom-level');
+      const fab = document.getElementById('fab');
+      const fabMenu = document.getElementById('fab-menu');
+      const fabUpload = document.getElementById('fab-upload');
+      const fabCamera = document.getElementById('fab-camera');
       
-      // Variáveis de estado
-      let currentZoom = 1;
-      let isDragging = false;
-      let startX, startY, scrollLeft, scrollTop;
+      // Inicialização
+      loadMusicData();
+      setupEventListeners();
       
-      // Função para renderizar as músicas
+      function loadMusicData() {
+        // Simulação de carregamento de dados
+        // Na implementação real, isso viria da sua API ou Google Drive
+        state.musicas = [
+          { 
+            id: "1abc123",
+            title: "Imagine", 
+            artist: "John Lennon",
+            image: "https://via.placeholder.com/300x180/8b5cf6/ffffff?text=Imagine",
+            cifra: "https://drive.google.com/thumbnail?id=1abc123&sz=w1000",
+            driveId: "1abc123",
+            type: "digitada"
+          },
+          { 
+            id: "2def456",
+            title: "Bohemian Rhapsody", 
+            artist: "Queen",
+            image: "https://via.placeholder.com/300x180/4f46e5/ffffff?text=Bohemian+Rhapsody",
+            cifra: "https://drive.google.com/thumbnail?id=2def456&sz=w1000",
+            driveId: "2def456",
+            type: "manuscrita"
+          },
+          { 
+            id: "3ghi789",
+            title: "Hotel California", 
+            artist: "Eagles",
+            image: "https://via.placeholder.com/300x180/7c3aed/ffffff?text=Hotel+California",
+            cifra: "https://drive.google.com/thumbnail?id=3ghi789&sz=w1000",
+            driveId: "3ghi789",
+            type: "digitada"
+          },
+          { 
+            id: "4jkl012",
+            title: "Yesterday", 
+            artist: "The Beatles",
+            image: "https://via.placeholder.com/300x180/6d28d9/ffffff?text=Yesterday",
+            cifra: "https://drive.google.com/thumbnail?id=4jkl012&sz=w1000",
+            driveId: "4jkl012",
+            type: "manuscrita"
+          }
+        ];
+        
+        renderMusicGrid(state.musicas);
+      }
+      
+      function setupEventListeners() {
+        // Busca
+        searchInput.addEventListener('input', handleSearch);
+        searchInput.addEventListener('focus', () => {
+          if (state.searchResults.length > 0) {
+            searchDropdown.classList.add('show');
+          }
+        });
+        
+        // Visualizador de Cifras
+        closeViewer.addEventListener('click', closeCifraViewer);
+        zoomInBtn.addEventListener('click', zoomIn);
+        zoomOutBtn.addEventListener('click', zoomOut);
+        zoomResetBtn.addEventListener('click', resetZoom);
+        
+        // FAB Button
+        fab.addEventListener('click', toggleFabMenu);
+        document.addEventListener('click', closeFabMenuOnClickOutside);
+        fabUpload.addEventListener('click', handleUpload);
+        fabCamera.addEventListener('click', handleCamera);
+        
+        // Fechar visualizador com ESC
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && cifraViewer.style.display === 'flex') {
+            closeCifraViewer();
+          }
+        });
+      }
+      
       function renderMusicGrid(musicList) {
         musicGrid.innerHTML = '';
         musicList.forEach(music => {
@@ -385,98 +527,144 @@
         });
       }
       
-      // Função para abrir o visualizador de cifras
-      function openCifraViewer(music) {
-        cifraTitle.textContent = `${music.title} - ${music.artist}`;
-        cifraImage.src = music.cifra;
-        cifraImage.style.transform = 'scale(1)';
-        currentZoom = 1;
-        zoomLevel.textContent = '100%';
-        cifraViewer.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+      function handleSearch(e) {
+        const query = e.target.value.toLowerCase();
         
-        // Ajuste inicial para imagens manuscritas (zoom maior)
-        if (music.cifra.includes('Manuscrita')) {
-          currentZoom = 1.5;
-          cifraImage.style.transform = `scale(${currentZoom})`;
-          zoomLevel.textContent = `${Math.round(currentZoom * 100)}%`;
+        if (query.length < 2) {
+          searchDropdown.classList.remove('show');
+          state.searchResults = [];
+          return;
         }
+        
+        // Simulação de busca - na prática, você usaria searchDrive(query)
+        state.searchResults = state.musicas.filter(music => 
+          music.title.toLowerCase().includes(query) || 
+          music.artist.toLowerCase().includes(query)
+          .slice(0, 5);
+        
+        renderSearchDropdown();
       }
       
-      // Função para fechar o visualizador
+      function renderSearchDropdown() {
+        searchDropdown.innerHTML = '';
+        
+        if (state.searchResults.length === 0) {
+          const item = document.createElement('div');
+          item.className = 'search-item';
+          item.textContent = 'Nenhum resultado encontrado';
+          searchDropdown.appendChild(item);
+        } else {
+          state.searchResults.forEach(music => {
+            const item = document.createElement('div');
+            item.className = 'search-item';
+            item.textContent = `${music.title} - ${music.artist}`;
+            item.addEventListener('click', () => {
+              openCifraViewer(music);
+              searchInput.value = '';
+              searchDropdown.classList.remove('show');
+            });
+            searchDropdown.appendChild(item);
+          });
+        }
+        
+        searchDropdown.classList.add('show');
+      }
+      
+      function openCifraViewer(music) {
+        state.currentCifra = music;
+        cifraTitle.textContent = `${music.title} - ${music.artist}`;
+        cifraImage.src = music.cifra;
+        resetZoom();
+        
+        // Ajuste inicial para imagens manuscritas
+        if (music.type === 'manuscrita') {
+          state.currentZoom = 1.5;
+          cifraImage.style.transform = `scale(${state.currentZoom})`;
+          zoomLevel.textContent = `${Math.round(state.currentZoom * 100)}%`;
+        }
+        
+        cifraViewer.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      
       function closeCifraViewer() {
         cifraViewer.style.display = 'none';
         document.body.style.overflow = 'auto';
       }
       
-      // Event Listeners
-      closeViewer.addEventListener('click', closeCifraViewer);
+      function zoomIn() {
+        state.currentZoom += 0.1;
+        updateZoom();
+      }
       
-      // Controles de zoom
-      zoomInBtn.addEventListener('click', () => {
-        currentZoom += 0.1;
-        cifraImage.style.transform = `scale(${currentZoom})`;
-        zoomLevel.textContent = `${Math.round(currentZoom * 100)}%`;
-      });
-      
-      zoomOutBtn.addEventListener('click', () => {
-        if (currentZoom > 0.5) {
-          currentZoom -= 0.1;
-          cifraImage.style.transform = `scale(${currentZoom})`;
-          zoomLevel.textContent = `${Math.round(currentZoom * 100)}%`;
+      function zoomOut() {
+        if (state.currentZoom > 0.5) {
+          state.currentZoom -= 0.1;
+          updateZoom();
         }
-      });
+      }
       
-      zoomResetBtn.addEventListener('click', () => {
-        currentZoom = 1;
-        cifraImage.style.transform = `scale(${currentZoom})`;
-        zoomLevel.textContent = `${Math.round(currentZoom * 100)}%`;
-      });
+      function resetZoom() {
+        state.currentZoom = 1;
+        updateZoom();
+      }
       
-      // Funcionalidade de arrastar a imagem
-      cifraImage.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        startX = e.pageX - cifraImage.offsetLeft;
-        startY = e.pageY - cifraImage.offsetTop;
-        scrollLeft = cifraImage.scrollLeft;
-        scrollTop = cifraImage.scrollTop;
-        e.preventDefault();
-      });
+      function updateZoom() {
+        cifraImage.style.transform = `scale(${state.currentZoom})`;
+        zoomLevel.textContent = `${Math.round(state.currentZoom * 100)}%`;
+      }
       
-      document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        const x = e.pageX - cifraImage.offsetLeft;
-        const y = e.pageY - cifraImage.offsetTop;
-        const walkX = (x - startX) * 2;
-        const walkY = (y - startY) * 2;
-        cifraImage.scrollLeft = scrollLeft - walkX;
-        cifraImage.scrollTop = scrollTop - walkY;
-      });
+      function toggleFabMenu() {
+        fabMenu.classList.toggle('show');
+      }
       
-      document.addEventListener('mouseup', () => {
-        isDragging = false;
-      });
-      
-      // Funcionalidade de busca (simplificada)
-      searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const filteredMusic = musicData.filter(music => 
-          music.title.toLowerCase().includes(searchTerm) || 
-          music.artist.toLowerCase().includes(searchTerm)
-        );
-        renderMusicGrid(filteredMusic);
-      });
-      
-      // Inicializa o grid com todas as músicas
-      renderMusicGrid(musicData);
-      
-      // Fecha o visualizador ao pressionar ESC
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && cifraViewer.style.display === 'flex') {
-          closeCifraViewer();
+      function closeFabMenuOnClickOutside(e) {
+        if (!fabMenu.contains(e.target) {
+          fabMenu.classList.remove('show');
         }
-      });
+      }
+      
+      async function handleUpload() {
+        fabMenu.classList.remove('show');
+        alert('Funcionalidade de upload será implementada aqui');
+        // Implementação real usaria gapiAuth() e uploadCifraToDrive()
+      }
+      
+      async function handleCamera() {
+        fabMenu.classList.remove('show');
+        alert('Funcionalidade de câmera será implementada aqui');
+        // Implementação real usaria openCameraCapture()
+      }
+      
+      // Funções para integração com Google Drive
+      async function searchDrive(query) {
+        if (!query) return [];
+        const url = `https://www.googleapis.com/drive/v3/files?q='${GOOGLE_DRIVE_FOLDER_ID}'+in+parents+and+trashed=false+and+name+contains+'${encodeURIComponent(query)}'&fields=files(id,name,thumbnailLink)&key=${GOOGLE_API_KEY}`;
+        
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) return [];
+          const data = await resp.json();
+          return data.files || [];
+        } catch (error) {
+          console.error('Erro na busca no Drive:', error);
+          return [];
+        }
+      }
+      
+      async function gapiAuth() {
+        return new Promise((resolve, reject) => {
+          // Implementação real da autenticação com Google API
+        });
+      }
+      
+      async function uploadCifraToDrive(file) {
+        // Implementação real do upload para o Google Drive
+      }
+      
+      async function openCameraCapture() {
+        // Implementação real da captura pela câmera
+      }
     });
   </script>
 </body>
