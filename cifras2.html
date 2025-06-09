@@ -536,14 +536,13 @@
           return;
         }
         
-        // Simulação de busca - na prática, você usaria searchDrive(query)
-        state.searchResults = state.musicas.filter(music => 
-          music.title.toLowerCase().includes(query) || 
-          music.artist.toLowerCase().includes(query)
-          .slice(0, 5));
-        
-        renderSearchDropdown();
-      }
+     state.searchResults = state.musicas
+  .filter(music =>
+    music.title.toLowerCase().includes(query) ||
+    music.artist.toLowerCase().includes(query)
+  )
+  .slice(0, 5); // aqui sim!
+
       
       function renderSearchDropdown() {
         searchDropdown.innerHTML = '';
