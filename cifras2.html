@@ -3,226 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChordVerse - Acordes Musicais Modernos</title>
+  <title>Dropdown Cifras Google Drive</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    .category-item {
-      transition: transform 0.3s;
-      user-select: none;
-      touch-action: pan-y;
-    }
-    .category-item.swiped {
-      transform: translateX(-60px);
-    }
-    .delete-btn {
-      display: none;
-      position: absolute;
-      right: 10px;
-      top: 8px;
-      background: #f87171;
-      color: white;
-      border-radius: 0.375rem;
-      padding: 0.25rem 0.75rem;
-      z-index: 10;
-    }
-    .category-item.swiped .delete-btn, .category-item:hover .delete-btn {
-      display: block;
-    }
-    .hamburger-overlay {
-      display: none;
-      position: fixed;
-      z-index: 49;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
-    }
-    .sidebar-open {
-      transform: translateX(0) !important;
-    }
-    .sidebar-closed {
-      transform: translateX(-100%) !important;
-    }
-    @media (min-width: 768px) {
-      .sidebar-desktop {
-        width: 320px;
-        left: 40px;
-        top: 80px;
-        border-radius: 0.75rem;
-      }
-    }
-  </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
+
   <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
     <div class="container mx-auto px-4 py-6 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <i class="fas fa-guitar text-3xl"></i>
-        <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
-      </div>
-      <button id="hamburgerBtn" class="text-3xl ml-4"><i class="fas fa-bars"></i></button>
-      <p class="hidden md:block ml-12 text-blue-100">Encontre os acordes das suas músicas favoritas</p>
+      <h1 class="text-2xl md:text-3xl font-bold">Dropdown Cifras Google Drive</h1>
     </div>
   </header>
 
-  <!-- Overlay -->
-  <div id="hamburgerOverlay" class="hamburger-overlay"></div>
-
-  <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
-    <!-- Sidebar/Menu Hamburguer -->
-    <nav id="sidebarMenu"
-      class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 p-6 transition-transform sidebar-closed sidebar-desktop"
-      style="max-width: 90vw;">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-blue-800">Categorias</h2>
-        <button id="closeSidebar" class="text-xl"><i class="fas fa-times"></i></button>
-      </div>
-      <ul id="categoriesList" class="space-y-2"></ul>
-    </nav>
-
-    <!-- Conteúdo principal (exemplo) -->
-    <section class="md:w-3/4">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">Músicas Disponíveis</h2>
-      <div id="songList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Sua lista de músicas aqui -->
-        <div class="bg-white rounded-lg shadow-md p-6">Exemplo de música</div>
-      </div>
-    </section>
+  <main class="container mx-auto px-4 py-8">
+    <div class="my-4 flex items-center space-x-2">
+      <label for="dropdownCifras" class="font-bold text-blue-700">Cifras do Drive:</label>
+      <select id="dropdownCifras" class="border rounded px-3 py-2 min-w-[200px]">
+        <option>Carregando...</option>
+      </select>
+      <button id="btnReloadCifras" class="ml-2 px-2 py-1 bg-blue-500 text-white rounded" title="Recarregar"><i class="fas fa-sync"></i></button>
+      <button id="btnGoogleSignOut" class="ml-2 px-2 py-1 bg-red-500 text-white rounded" title="Sair do Google" style="display:none"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+    <div id="cifraInfo" class="mt-4 text-blue-800"></div>
   </main>
 
+  <!-- Google API -->
+  <script src="https://apis.google.com/js/api.js"></script>
   <script>
-    // Categorias fixas
-    const fixedCategories = [
-      { name: "Domingo Manhã", id: "domingo-manha" },
-      { name: "Domingo Noite", id: "domingo-noite" },
-      { name: "Segunda", id: "segunda" },
-      { name: "Quarta", id: "quarta" },
-      { name: "+", id: "adicionar" }
-    ];
-    let customCategories = JSON.parse(localStorage.getItem('customCategories') || '[]');
+    const GOOGLE_DRIVE_FOLDER_ID = "1OzrvB4NCBRTDgMsE_AhQy0b11bdn3v82";
+    const GOOGLE_API_KEY = "AIzaSyD2qLxX7fYIMxt34aeWWDsx_nWaSsFCguk";
+    const GOOGLE_CLIENT_ID = "977942417278-0mfg7iehelnjfqmk5a32elsr7ll8hkil.apps.googleusercontent.com";
+    const GOOGLE_SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
-    // Renderização das categorias
-    function renderCategories() {
-      const ul = document.getElementById('categoriesList');
-      ul.innerHTML = '';
-      // Fixas
-      fixedCategories.forEach(cat => {
-        if (cat.name === "+") {
-          ul.innerHTML += `
-            <li>
-              <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
-            </li>
-          `;
+    let gapiInitialized = false;
+
+    // Inicializa a API do Google
+    function gapiLoadAndInit(callback) {
+      gapi.load('client:auth2', async function() {
+        await gapi.client.init({
+          apiKey: GOOGLE_API_KEY,
+          clientId: GOOGLE_CLIENT_ID,
+          scope: GOOGLE_SCOPES,
+          discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
+        });
+        gapiInitialized = true;
+        callback && callback();
+      });
+    }
+
+    // Faz login se necessário
+    async function ensureGoogleAuth() {
+      const authInstance = gapi.auth2.getAuthInstance();
+      if (!authInstance.isSignedIn.get()) {
+        await authInstance.signIn();
+        document.getElementById("btnGoogleSignOut").style.display = "";
+      }
+    }
+
+    // Logout
+    function signOutGoogle() {
+      const authInstance = gapi.auth2.getAuthInstance();
+      if (authInstance && authInstance.isSignedIn.get()) {
+        authInstance.signOut().then(() => {
+          document.getElementById("btnGoogleSignOut").style.display = "none";
+          document.getElementById("dropdownCifras").innerHTML = `<option>Faça login novamente para ver as cifras</option>`;
+        });
+      }
+    }
+
+    // Lista arquivos na pasta do Drive
+    async function listDriveCifras() {
+      await ensureGoogleAuth();
+      const res = await gapi.client.drive.files.list({
+        q: `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and trashed = false`,
+        fields: "files(id, name, mimeType)",
+        pageSize: 100
+      });
+      return res.result.files;
+    }
+
+    // Preenche o dropdown com os nomes das cifras
+    async function fillDropdownCifras() {
+      const select = document.getElementById('dropdownCifras');
+      select.innerHTML = `<option>Carregando...</option>`;
+      try {
+        const files = await listDriveCifras();
+        if (!files || !files.length) {
+          select.innerHTML = `<option>Nenhuma cifra encontrada</option>`;
+          return;
+        }
+        select.innerHTML = '';
+        files.forEach(file => {
+          // Oculta extensão do arquivo
+          const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
+          const opt = document.createElement('option');
+          opt.value = file.id;
+          opt.textContent = nomeSemExt;
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        select.innerHTML = `<option>Erro ao carregar</option>`;
+        alert("Erro ao acessar o Google Drive: " + e.message);
+      }
+    }
+
+    // Exemplo de ação ao selecionar uma cifra
+    document.addEventListener("DOMContentLoaded", () => {
+      gapiLoadAndInit(fillDropdownCifras);
+
+      // Evento para recarregar
+      document.getElementById('btnReloadCifras').addEventListener('click', fillDropdownCifras);
+
+      // Evento para logout
+      document.getElementById('btnGoogleSignOut').addEventListener('click', signOutGoogle);
+
+      // Ao selecionar uma cifra
+      document.getElementById('dropdownCifras').addEventListener('change', function() {
+        const fileId = this.value;
+        const cifraName = this.options[this.selectedIndex].text;
+        if (fileId) {
+          document.getElementById('cifraInfo').textContent = `Cifra selecionada: ${cifraName}`;
+          // Aqui você pode chamar uma função para exibir ou baixar a cifra selecionada
+          // Exemplo: downloadDriveFile(fileId);
         } else {
-          ul.innerHTML += `
-            <li>
-              <a href="#" class="text-blue-600 hover:text-blue-800 transition block px-2 py-1 rounded" data-category="${cat.id}">${cat.name}</a>
-            </li>
-          `;
+          document.getElementById('cifraInfo').textContent = '';
         }
       });
-      // Customizadas
-      customCategories.forEach((cat, idx) => {
-        ul.innerHTML += `
-          <li class="relative">
-            <div class="category-item px-2 py-1 rounded flex items-center group relative" data-idx="${idx}" draggable="false">
-              <span class="flex-grow text-blue-600 hover:text-blue-800 transition cursor-pointer" data-category="${cat.id}">${cat.name}</span>
-              <button class="delete-btn" data-idx="${idx}"><i class="fas fa-trash"></i></button>
-            </div>
-          </li>
-        `;
-      });
-    }
-
-    // Adição de categoria
-    document.addEventListener('click', function(e){
-      if (e.target.id === 'addCategoryBtn') {
-        const li = e.target.closest('li');
-        li.innerHTML = `
-          <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
-          <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
-        `;
-        setTimeout(() => document.getElementById('newCatInput').focus(), 100);
-      } else if (e.target.id === 'saveCatBtn' || e.target.closest('#saveCatBtn')) {
-        const input = document.getElementById('newCatInput');
-        if (input && input.value.trim()) {
-          const value = input.value.trim();
-          const id = "custom-" + Date.now();
-          customCategories.push({ name: value, id });
-          localStorage.setItem('customCategories', JSON.stringify(customCategories));
-          renderCategories();
-        }
-      }
-      // Exclusão categoria customizada
-      if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
-        const idx = e.target.dataset.idx || e.target.closest('.delete-btn').dataset.idx;
-        customCategories.splice(idx, 1);
-        localStorage.setItem('customCategories', JSON.stringify(customCategories));
-        renderCategories();
-      }
     });
-
-    // Swipe to delete (mobile) e hover (desktop)
-    let startX = 0, swipedIdx = null;
-    document.addEventListener('touchstart', function(e){
-      const item = e.target.closest('.category-item');
-      if (item) {
-        startX = e.touches[0].clientX;
-        swipedIdx = item.dataset.idx;
-      }
-    });
-    document.addEventListener('touchmove', function(e){
-      if (swipedIdx !== null) {
-        const item = document.querySelector(`.category-item[data-idx="${swipedIdx}"]`);
-        if (item) {
-          let diff = e.touches[0].clientX - startX;
-          if (diff < -30) item.classList.add('swiped');
-          else item.classList.remove('swiped');
-        }
-      }
-    });
-    document.addEventListener('touchend', function(){
-      swipedIdx = null;
-    });
-
-    // Filtro de músicas (ajuste segundo sua lógica)
-    document.addEventListener('click', function(e){
-      if (e.target.dataset.category) {
-        const catId = e.target.dataset.category;
-        // Chame aqui sua função de filtro de músicas por categoria
-        alert('Filtrar músicas pela categoria: ' + catId);
-      }
-    });
-
-    // Hamburguer menu (funciona no desktop e no mobile)
-    const sidebarMenu = document.getElementById('sidebarMenu');
-    const hamburgerOverlay = document.getElementById('hamburgerOverlay');
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const closeSidebar = document.getElementById('closeSidebar');
-
-    function openSidebar() {
-      sidebarMenu.classList.remove('sidebar-closed');
-      sidebarMenu.classList.add('sidebar-open');
-      hamburgerOverlay.style.display = 'block';
-    }
-    function closeSidebarFn() {
-      sidebarMenu.classList.remove('sidebar-open');
-      sidebarMenu.classList.add('sidebar-closed');
-      hamburgerOverlay.style.display = 'none';
-    }
-
-    hamburgerBtn.addEventListener('click', openSidebar);
-    closeSidebar.addEventListener('click', closeSidebarFn);
-    hamburgerOverlay.addEventListener('click', closeSidebarFn);
-
-    // Tecla ESC fecha o menu
-    document.addEventListener('keydown', function(e){
-      if (e.key === "Escape" && sidebarMenu.classList.contains('sidebar-open')) {
-        closeSidebarFn();
-      }
-    });
-
-    // Inicialização
-    renderCategories();
   </script>
 </body>
 </html>
