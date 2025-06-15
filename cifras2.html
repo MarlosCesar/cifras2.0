@@ -1,963 +1,200 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChordVerse - Acordes Musicais Modernos</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .chord {
-            color: #3b82f6;
-            font-weight: bold;
-            position: relative;
-            top: -0.5em;
-            font-size: 0.8em;
-        }
-        .lyric-line {
-            margin-bottom: 1rem;
-            line-height: 2;
-        }
-        .song-container {
-            transition: all 0.3s ease;
-        }
-        .song-container:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .dark-mode {
-            background-color: #1a202c;
-            color: #e2e8f0;
-        }
-        .dark-mode .song-card {
-            background-color: #2d3748;
-            border-color: #4a5568;
-        }
-        .dark-mode input {
-            background-color: #2d3748;
-            color: #e2e8f0;
-            border-color: #4a5568;
-        }
-        .dark-mode .chord {
-            color: #93c5fd;
-        }
-        .scroll-to-top {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: none;
-            z-index: 99;
-        }
-        .highlight {
-            background-color: rgba(251, 191, 36, 0.3);
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChordVerse - Acordes Musicais Modernos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .category-item {
+      transition: transform 0.3s;
+      user-select: none;
+      touch-action: pan-y;
+    }
+    .category-item.swiped {
+      transform: translateX(-60px);
+    }
+    .delete-btn {
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      background: #f87171;
+      color: white;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.75rem;
+      z-index: 10;
+    }
+    .category-item.swiped .delete-btn, .category-item:hover .delete-btn {
+      display: block;
+    }
+    @media (min-width: 768px) {
+      #sidebarMenu {
+        display: block !important;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans transition-colors duration-300">
-    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-guitar text-3xl"></i>
-                    <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button id="darkModeToggle" class="p-2 rounded-full hover:bg-blue-700 transition">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <button id="fontSizeToggle" class="p-2 rounded-full hover:bg-blue-700 transition">
-                        <i class="fas fa-text-height"></i>
-                    </button>
-                </div>
+<body class="bg-gray-50 min-h-screen font-sans">
+  <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-guitar text-3xl"></i>
+        <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
+      </div>
+      <button id="hamburgerBtn" class="md:hidden text-3xl"><i class="fas fa-bars"></i></button>
+      <p class="hidden md:block ml-12 text-blue-100">Encontre os acordes das suas músicas favoritas</p>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+    <!-- Sidebar/Menu Hamburguer -->
+    <nav id="sidebarMenu" class="fixed md:static top-0 left-0 h-full w-64 bg-white shadow-lg z-40 p-6 transition-transform -translate-x-full md:translate-x-0 md:w-1/4 md:rounded-lg" style="display:none;">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-blue-800">Categorias</h2>
+        <button id="closeSidebar" class="md:hidden text-xl"><i class="fas fa-times"></i></button>
+      </div>
+      <ul id="categoriesList" class="space-y-2"></ul>
+    </nav>
+
+    <!-- Conteúdo principal (exemplo) -->
+    <section class="md:w-3/4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Músicas Disponíveis</h2>
+      <div id="songList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Sua lista de músicas aqui -->
+        <div class="bg-white rounded-lg shadow-md p-6">Exemplo de música</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Categorias fixas
+    const fixedCategories = [
+      { name: "Domingo Manhã", id: "domingo-manha" },
+      { name: "Domingo Noite", id: "domingo-noite" },
+      { name: "Segunda", id: "segunda" },
+      { name: "Quarta", id: "quarta" },
+      { name: "+", id: "adicionar" }
+    ];
+    let customCategories = JSON.parse(localStorage.getItem('customCategories') || '[]');
+
+    // Renderização das categorias
+    function renderCategories() {
+      const ul = document.getElementById('categoriesList');
+      ul.innerHTML = '';
+      // Fixas
+      fixedCategories.forEach(cat => {
+        if (cat.name === "+") {
+          ul.innerHTML += `
+            <li>
+              <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
+            </li>
+          `;
+        } else {
+          ul.innerHTML += `
+            <li>
+              <a href="#" class="text-blue-600 hover:text-blue-800 transition block px-2 py-1 rounded" data-category="${cat.id}">${cat.name}</a>
+            </li>
+          `;
+        }
+      });
+      // Customizadas
+      customCategories.forEach((cat, idx) => {
+        ul.innerHTML += `
+          <li class="relative">
+            <div class="category-item px-2 py-1 rounded flex items-center group relative" data-idx="${idx}" draggable="false">
+              <span class="flex-grow text-blue-600 hover:text-blue-800 transition cursor-pointer" data-category="${cat.id}">${cat.name}</span>
+              <button class="delete-btn" data-idx="${idx}"><i class="fas fa-trash"></i></button>
             </div>
-            <p class="mt-2 text-blue-100">Encontre os acordes das suas músicas favoritas</p>
-            
-            <div class="mt-6 relative">
-                <div class="flex">
-                    <input type="text" id="searchInput" placeholder="Buscar música ou artista..." 
-                           class="flex-grow px-4 py-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                    <button id="searchButton" class="bg-blue-500 hover:bg-blue-700 text-white px-6 py-3 rounded-r-lg transition">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div id="searchResults" class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-lg max-h-96 overflow-y-auto hidden">
-                    <!-- Search results will appear here -->
-                </div>
-            </div>
-        </div>
-    </header>
+          </li>
+        `;
+      });
+    }
 
-    <main class="container mx-auto px-4 py-8">
-        <div class="flex flex-col md:flex-row gap-8">
-            <!-- Sidebar -->
-            <aside class="md:w-1/4">
-                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
-                    <h2 class="text-xl font-bold mb-4 text-blue-800 border-b pb-2">Categorias</h2>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-blue-600 hover:text-blue-800 transition" data-category="all">Todas</a></li>
-                        <li><a href="#" class="text-blue-600 hover:text-blue-800 transition" data-category="gospel">Gospel</a></li>
-                        <li><a href="#" class="text-blue-600 hover:text-blue-800 transition" data-category="pop">Pop</a></li>
-                        <li><a href="#" class="text-blue-600 hover:text-blue-800 transition" data-category="rock">Rock</a></li>
-                        <li><a href="#" class="text-blue-600 hover:text-blue-800 transition" data-category="mpb">MPB</a></li>
-                    </ul>
-                    
-                    <h2 class="text-xl font-bold mt-6 mb-4 text-blue-800 border-b pb-2">Recentes</h2>
-                    <ul class="space-y-2" id="recentSongs">
-                        <!-- Recent songs will be added here by JavaScript -->
-                    </ul>
-                    
-                    <div class="mt-6">
-                        <h2 class="text-xl font-bold mb-4 text-blue-800 border-b pb-2">Ferramentas</h2>
-                        <button id="transposeUp" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 px-4 rounded mb-2 transition">
-                            <i class="fas fa-arrow-up mr-2"></i> Transpor +1
-                        </button>
-                        <button id="transposeDown" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 py-2 px-4 rounded transition">
-                            <i class="fas fa-arrow-down mr-2"></i> Transpor -1
-                        </button>
-                    </div>
-                </div>
-            </aside>
-            
-            <!-- Main content -->
-            <div class="md:w-3/4">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Músicas Disponíveis</h2>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-600">Ordenar por:</span>
-                        <select id="sortSelect" class="border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="title">Título (A-Z)</option>
-                            <option value="artist">Artista (A-Z)</option>
-                            <option value="newest">Mais Recentes</option>
-                            <option value="popular">Mais Populares</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="songList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Song cards will be added here by JavaScript -->
-                </div>
-                
-                <div id="songDetail" class="hidden mt-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 id="songTitle" class="text-3xl font-bold text-gray-800"></h2>
-                            <p id="songArtist" class="text-xl text-gray-600"></p>
-                        </div>
-                        <div class="flex space-x-3">
-                            <button id="printSong" class="bg-blue-100 hover:bg-blue-200 text-blue-800 p-2 rounded-full transition">
-                                <i class="fas fa-print"></i>
-                            </button>
-                            <button id="favoriteSong" class="bg-blue-100 hover:bg-blue-200 text-blue-800 p-2 rounded-full transition">
-                                <i class="far fa-heart"></i>
-                            </button>
-                            <button id="closeDetail" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-full transition">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow-md p-6 song-card">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex space-x-2">
-                                <span id="songKey" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">C</span>
-                                <span id="songDifficulty" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Fácil</span>
-                                <span id="songTempo" class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">120 BPM</span>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button id="playAudio" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <button id="metronomeToggle" class="bg-gray-200 hover:bg-gray-300 text-gray-800 p-2 rounded-full transition">
-                                    <i class="fas fa-stopwatch"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div id="songContent" class="text-lg leading-relaxed">
-                            <!-- Song content will be loaded here -->
-                        </div>
-                        
-                        <div class="mt-8 pt-4 border-t">
-                            <h3 class="text-xl font-bold mb-3">Capotraste Recomendado</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <button class="capo-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded transition" data-capo="0">Sem capo</button>
-                                <button class="capo-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded transition" data-capo="1">1ª casa</button>
-                                <button class="capo-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded transition" data-capo="2">2ª casa</button>
-                                <button class="capo-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded transition" data-capo="3">3ª casa</button>
-                                <button class="capo-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded transition" data-capo="4">4ª casa</button>
-                                <button class="capo-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded transition" data-capo="5">5ª casa</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 bg-white rounded-lg shadow-md p-6">
-                        <h3 class="text-xl font-bold mb-4">Comentários</h3>
-                        <div id="commentsSection">
-                            <div class="mb-4">
-                                <textarea id="commentInput" class="w-full border rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Adicione um comentário..."></textarea>
-                                <button id="submitComment" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition">Enviar</button>
-                            </div>
-                            <div id="commentsList">
-                                <!-- Comments will be loaded here -->
-                                <div class="text-center text-gray-500 py-4">Seja o primeiro a comentar!</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <button id="scrollToTop" class="scroll-to-top bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between">
-                <div class="mb-6 md:mb-0">
-                    <h3 class="text-xl font-bold mb-4">ChordVerse</h3>
-                    <p class="text-gray-400">O melhor lugar para encontrar acordes de músicas.</p>
-                    <div class="flex space-x-4 mt-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
-                    <div>
-                        <h4 class="text-lg font-semibold mb-4">Links</h4>
-                        <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Início</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Músicas</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Artistas</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Sobre</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-semibold mb-4">Ajuda</h4>
-                        <ul class="space-y-2">
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Contato</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Termos</a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-white transition">Privacidade</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
-                        <p class="text-gray-400 mb-2">Inscreva-se para receber novidades.</p>
-                        <div class="flex">
-                            <input type="email" placeholder="Seu email" class="px-3 py-2 rounded-l text-gray-800 focus:outline-none">
-                            <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-r transition">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
-                <p>&copy; 2023 ChordVerse. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Sample song data
-        const songs = [
-            {
-                id: 1,
-                title: "Amor Maior",
-                artist: "Banda Azul",
-                category: "gospel",
-                key: "C",
-                difficulty: "Fácil",
-                tempo: 75,
-                content: `
-[Intro] C  G  Am  F
-
-[Verso 1]
-C           G
-Amor maior não há
-Am          F
-Que o amor de Deus por mim
-C             G
-Mesmo quando falho
-Am          F
-Ele me recebe assim
-
-[Refrão]
-C       G       Am      F
-Nada pode me separar do amor
-C       G       Am      F
-Que está em Cristo Jesus
-C       G       Am      F
-Nem a vida, nem a morte
-C       G       Am      F
-Nada pode me separar
-                `,
-                views: 1250,
-                added: "2023-05-15"
-            },
-            {
-                id: 2,
-                title: "Tua Graça Me Basta",
-                artist: "Davi Fernandes",
-                category: "gospel",
-                key: "G",
-                difficulty: "Médio",
-                tempo: 85,
-                content: `
-[Intro] G  D  Em  C
-
-[Verso 1]
-G               D
-Quando a tempestade vem
-Em              C
-E o medo tenta me parar
-G               D
-Eu lembro que contigo
-Em              C
-Eu posso caminhar
-
-[Refrão]
-G       D       Em      C
-Tua graça me basta, Senhor
-G       D       Em      C
-Tua força se aperfeiçoa em mim
-G       D       Em      C
-Quando fraco então sou forte
-G       D       Em      C
-Pois o teu poder me sustém
-                `,
-                views: 980,
-                added: "2023-06-22"
-            },
-            {
-                id: 3,
-                title: "O Medo Não Vai Parar",
-                artist: "Isadora Pompeo",
-                category: "gospel",
-                key: "D",
-                difficulty: "Fácil",
-                tempo: 78,
-                content: `
-[Intro] D  A  Bm  G
-
-[Verso 1]
-D           A
-Quando o medo vier
-Bm          G
-E tentar me parar
-D           A
-Eu lembro que contigo
-Bm          G
-Posso caminhar
-
-[Refrão]
-D       A       Bm      G
-O medo não vai me parar
-D       A       Bm      G
-Pois eu sei em quem eu creio
-D       A       Bm      G
-E Ele é fiel pra me guardar
-D       A       Bm      G
-O medo não vai me parar
-                `,
-                views: 2100,
-                added: "2023-04-10"
-            },
-            {
-                id: 4,
-                title: "Trem-Bala",
-                artist: "Ana Vilela",
-                category: "mpb",
-                key: "A",
-                difficulty: "Médio",
-                tempo: 92,
-                content: `
-[Intro] A  E  F#m  D
-
-[Verso 1]
-A           E
-A gente não quer só comida
-F#m          D
-A gente quer comida, diversão e arte
-A           E
-A gente não quer só comida
-F#m          D
-A gente quer saída para qualquer parte
-
-[Refrão]
-A       E       F#m      D
-Trem-bala, avião, não importa o lugar
-A       E       F#m      D
-O que importa é estar junto
-A       E       F#m      D
-Dividir esse mesmo ar
-                `,
-                views: 3500,
-                added: "2023-03-18"
-            },
-            {
-                id: 5,
-                title: "Boate Azul",
-                artist: "Bruno e Marrone",
-                category: "sertanejo",
-                key: "E",
-                difficulty: "Difícil",
-                tempo: 88,
-                content: `
-[Intro] E  B  C#m  A
-
-[Verso 1]
-E           B
-Eu lembro daquele dia
-C#m          A
-Quando a gente se encontrou
-E           B
-Na Boate Azul, meu amor
-C#m          A
-E o nosso amor começou
-
-[Refrão]
-E       B       C#m      A
-E foi na Boate Azul que eu te vi
-E       B       C#m      A
-E foi na Boate Azul que eu te amei
-E       B       C#m      A
-E foi na Boate Azul que eu perdi
-E       B       C#m      A
-O melhor amor que eu já vivi
-                `,
-                views: 4200,
-                added: "2023-02-05"
-            }
-        ];
-
-        // DOM elements
-        const songList = document.getElementById('songList');
-        const songDetail = document.getElementById('songDetail');
-        const songContent = document.getElementById('songContent');
-        const searchInput = document.getElementById('searchInput');
-        const searchResults = document.getElementById('searchResults');
-        const searchButton = document.getElementById('searchButton');
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const fontSizeToggle = document.getElementById('fontSizeToggle');
-        const scrollToTop = document.getElementById('scrollToTop');
-        const closeDetail = document.getElementById('closeDetail');
-        const printSong = document.getElementById('printSong');
-        const favoriteSong = document.getElementById('favoriteSong');
-        const transposeUp = document.getElementById('transposeUp');
-        const transposeDown = document.getElementById('transposeDown');
-        const sortSelect = document.getElementById('sortSelect');
-        const recentSongs = document.getElementById('recentSongs');
-        const commentInput = document.getElementById('commentInput');
-        const submitComment = document.getElementById('submitComment');
-        const commentsList = document.getElementById('commentsList');
-        const playAudio = document.getElementById('playAudio');
-        const metronomeToggle = document.getElementById('metronomeToggle');
-
-        // State variables
-        let currentSong = null;
-        let currentTransposition = 0;
-        let darkMode = false;
-        let fontSize = 'medium';
-        let recentSongIds = JSON.parse(localStorage.getItem('recentSongs')) || [];
-        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        let comments = JSON.parse(localStorage.getItem('comments')) || {};
-
-        // Initialize the app
-        function init() {
-            renderSongList();
-            updateRecentSongs();
-            checkDarkModePreference();
-            
-            // Load comments for each song
-            songs.forEach(song => {
-                if (!comments[song.id]) {
-                    comments[song.id] = [];
-                }
-            });
-            
-            // Save initial comments if not exists
-            if (!localStorage.getItem('comments')) {
-                localStorage.setItem('comments', JSON.stringify(comments));
-            }
+    // Adição de categoria
+    document.addEventListener('click', function(e){
+      if (e.target.id === 'addCategoryBtn') {
+        const li = e.target.closest('li');
+        li.innerHTML = `
+          <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
+          <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
+        `;
+        setTimeout(() => document.getElementById('newCatInput').focus(), 100);
+      } else if (e.target.id === 'saveCatBtn' || e.target.closest('#saveCatBtn')) {
+        const input = document.getElementById('newCatInput');
+        if (input && input.value.trim()) {
+          const value = input.value.trim();
+          const id = "custom-" + Date.now();
+          customCategories.push({ name: value, id });
+          localStorage.setItem('customCategories', JSON.stringify(customCategories));
+          renderCategories();
         }
+      }
+      // Exclusão categoria customizada
+      if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+        const idx = e.target.dataset.idx || e.target.closest('.delete-btn').dataset.idx;
+        customCategories.splice(idx, 1);
+        localStorage.setItem('customCategories', JSON.stringify(customCategories));
+        renderCategories();
+      }
+    });
 
-        // Render song list
-        function renderSongList(songArray = songs) {
-            songList.innerHTML = '';
-            
-            songArray.forEach(song => {
-                const songCard = document.createElement('div');
-                songCard.className = 'bg-white rounded-lg shadow-md overflow-hidden song-container hover:shadow-lg transition';
-                songCard.innerHTML = `
-                    <div class="p-6">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">${song.title}</h3>
-                                <p class="text-gray-600">${song.artist}</p>
-                            </div>
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">${song.category}</span>
-                        </div>
-                        <div class="mt-4 flex items-center justify-between">
-                            <div class="flex space-x-2">
-                                <span class="text-xs text-gray-500"><i class="fas fa-eye mr-1"></i> ${song.views.toLocaleString()}</span>
-                                <span class="text-xs text-gray-500"><i class="fas fa-guitar mr-1"></i> ${song.difficulty}</span>
-                            </div>
-                            <button class="view-song-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition" data-id="${song.id}">
-                                Ver acordes
-                            </button>
-                        </div>
-                    </div>
-                `;
-                songList.appendChild(songCard);
-            });
-            
-            // Add event listeners to view buttons
-            document.querySelectorAll('.view-song-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const songId = parseInt(e.target.dataset.id);
-                    showSongDetail(songId);
-                    
-                    // Add to recent songs
-                    if (!recentSongIds.includes(songId)) {
-                        recentSongIds.unshift(songId);
-                        if (recentSongIds.length > 5) {
-                            recentSongIds.pop();
-                        }
-                        localStorage.setItem('recentSongs', JSON.stringify(recentSongIds));
-                        updateRecentSongs();
-                    }
-                });
-            });
+    // Swipe to delete (mobile) e hover (desktop)
+    let startX = 0, swipedIdx = null;
+    document.addEventListener('touchstart', function(e){
+      const item = e.target.closest('.category-item');
+      if (item) {
+        startX = e.touches[0].clientX;
+        swipedIdx = item.dataset.idx;
+      }
+    });
+    document.addEventListener('touchmove', function(e){
+      if (swipedIdx !== null) {
+        const item = document.querySelector(`.category-item[data-idx="${swipedIdx}"]`);
+        if (item) {
+          let diff = e.touches[0].clientX - startX;
+          if (diff < -30) item.classList.add('swiped');
+          else item.classList.remove('swiped');
         }
+      }
+    });
+    document.addEventListener('touchend', function(){
+      swipedIdx = null;
+    });
 
-        // Show song detail
-        function showSongDetail(songId) {
-            currentSong = songs.find(song => song.id === songId);
-            if (!currentSong) return;
-            
-            document.getElementById('songTitle').textContent = currentSong.title;
-            document.getElementById('songArtist').textContent = currentSong.artist;
-            document.getElementById('songKey').textContent = currentSong.key;
-            document.getElementById('songDifficulty').textContent = currentSong.difficulty;
-            document.getElementById('songTempo').textContent = `${currentSong.tempo} BPM`;
-            
-            // Check if song is favorite
-            const isFavorite = favorites.includes(songId);
-            favoriteSong.innerHTML = isFavorite ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
-            
-            // Format and display song content
-            formatSongContent(currentSong.content);
-            
-            // Show comments for this song
-            displayComments(songId);
-            
-            // Show detail section and hide list
-            songDetail.classList.remove('hidden');
-            songList.classList.add('hidden');
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    // Filtro de músicas (ajuste segundo sua lógica)
+    document.addEventListener('click', function(e){
+      if (e.target.dataset.category) {
+        const catId = e.target.dataset.category;
+        // Chame aqui sua função de filtro de músicas por categoria
+        alert('Filtrar músicas pela categoria: ' + catId);
+      }
+    });
 
-        // Format song content with chords
-        function formatSongContent(content) {
-            // Reset transposition
-            currentTransposition = 0;
-            
-            // Split content into lines
-            const lines = content.split('\n').filter(line => line.trim() !== '');
-            
-            let html = '';
-            
-            lines.forEach(line => {
-                if (line.trim() === '') return;
-                
-                // Check if line is a section header (e.g., [Intro])
-                if (line.startsWith('[') && line.endsWith(']')) {
-                    html += `<div class="my-4"><span class="font-bold text-blue-600">${line}</span></div>`;
-                    return;
-                }
-                
-                // Process chords and lyrics
-                const parts = line.split(/(\[.*?\])/).filter(part => part !== '');
-                let lineHtml = '<div class="lyric-line">';
-                
-                parts.forEach(part => {
-                    if (part.startsWith('[') && part.endsWith(']')) {
-                        // It's a chord
-                        const chord = part.slice(1, -1);
-                        lineHtml += `<span class="chord" data-chord="${chord}">${chord}</span>`;
-                    } else {
-                        // It's lyrics
-                        lineHtml += part;
-                    }
-                });
-                
-                lineHtml += '</div>';
-                html += lineHtml;
-            });
-            
-            songContent.innerHTML = html;
-        }
+    // Responsividade do menu hamburguer
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    document.getElementById('hamburgerBtn').addEventListener('click', () => {
+      sidebarMenu.style.display = 'block';
+      setTimeout(() => sidebarMenu.classList.remove('-translate-x-full'), 10);
+    });
+    document.getElementById('closeSidebar').addEventListener('click', () => {
+      sidebarMenu.classList.add('-translate-x-full');
+      setTimeout(() => sidebarMenu.style.display = 'none', 300);
+    });
+    // Fecha menu ao clicar fora no mobile
+    document.addEventListener('click', function(e){
+      if (window.innerWidth < 768 &&
+        sidebarMenu.style.display === 'block' &&
+        !sidebarMenu.contains(e.target) &&
+        !e.target.closest('#hamburgerBtn')) {
+        sidebarMenu.classList.add('-translate-x-full');
+        setTimeout(() => sidebarMenu.style.display = 'none', 300);
+      }
+    });
 
-        // Update recent songs list
-        function updateRecentSongs() {
-            recentSongs.innerHTML = '';
-            
-            recentSongIds.forEach(songId => {
-                const song = songs.find(s => s.id === songId);
-                if (song) {
-                    const li = document.createElement('li');
-                    li.className = 'flex justify-between items-center py-1 border-b border-gray-100';
-                    li.innerHTML = `
-                        <a href="#" class="text-blue-600 hover:text-blue-800 transition recent-song-link" data-id="${song.id}">${song.title}</a>
-                        <span class="text-xs text-gray-500">${song.artist}</span>
-                    `;
-                    recentSongs.appendChild(li);
-                }
-            });
-            
-            // Add event listeners to recent song links
-            document.querySelectorAll('.recent-song-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const songId = parseInt(e.target.dataset.id);
-                    showSongDetail(songId);
-                });
-            });
-        }
-
-        // Search functionality
-        function searchSongs(query) {
-            if (!query.trim()) {
-                searchResults.classList.add('hidden');
-                return;
-            }
-            
-            const results = songs.filter(song => 
-                song.title.toLowerCase().includes(query.toLowerCase()) || 
-                song.artist.toLowerCase().includes(query.toLowerCase())
-            );
-            
-            searchResults.innerHTML = '';
-            
-            if (results.length === 0) {
-                searchResults.innerHTML = '<div class="p-4 text-gray-500">Nenhum resultado encontrado</div>';
-            } else {
-                results.forEach(song => {
-                    const div = document.createElement('div');
-                    div.className = 'p-3 hover:bg-gray-100 cursor-pointer transition';
-                    div.innerHTML = `
-                        <div class="font-medium">${song.title}</div>
-                        <div class="text-sm text-gray-600">${song.artist}</div>
-                    `;
-                    div.addEventListener('click', () => {
-                        showSongDetail(song.id);
-                        searchResults.classList.add('hidden');
-                        searchInput.value = '';
-                    });
-                    searchResults.appendChild(div);
-                });
-            }
-            
-            searchResults.classList.remove('hidden');
-        }
-
-        // Transpose chords
-        function transposeChords(steps) {
-            currentTransposition += steps;
-            
-            // Limit transposition to reasonable range
-            if (currentTransposition > 6) currentTransposition = 6;
-            if (currentTransposition < -6) currentTransposition = -6;
-            
-            // Get all chord elements
-            const chordElements = songContent.querySelectorAll('.chord');
-            
-            // Define chord progression
-            const chordOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            
-            chordElements.forEach(el => {
-                const originalChord = el.dataset.chord;
-                
-                // Handle complex chords (like C#m7)
-                const baseChordMatch = originalChord.match(/^([A-G][#b]?)/);
-                if (!baseChordMatch) return;
-                
-                const baseChord = baseChordMatch[0];
-                const suffix = originalChord.slice(baseChord.length);
-                
-                // Find current position in chord order
-                let currentIndex = chordOrder.indexOf(baseChord.toUpperCase());
-                if (currentIndex === -1) return;
-                
-                // Calculate new position with transposition
-                let newIndex = (currentIndex + currentTransposition) % chordOrder.length;
-                if (newIndex < 0) newIndex += chordOrder.length;
-                
-                // Get new base chord
-                const newBaseChord = chordOrder[newIndex];
-                
-                // Update chord text and data attribute
-                const newChord = newBaseChord + suffix;
-                el.textContent = newChord;
-                el.dataset.chord = newChord;
-            });
-            
-            // Update key display
-            const originalKey = currentSong.key;
-            let keyIndex = chordOrder.indexOf(originalKey.toUpperCase());
-            if (keyIndex !== -1) {
-                let newKeyIndex = (keyIndex + currentTransposition) % chordOrder.length;
-                if (newKeyIndex < 0) newKeyIndex += chordOrder.length;
-                const newKey = chordOrder[newKeyIndex];
-                document.getElementById('songKey').textContent = newKey;
-            }
-        }
-
-        // Display comments for a song
-        function displayComments(songId) {
-            const songComments = comments[songId] || [];
-            
-            if (songComments.length === 0) {
-                commentsList.innerHTML = '<div class="text-center text-gray-500 py-4">Seja o primeiro a comentar!</div>';
-                return;
-            }
-            
-            commentsList.innerHTML = '';
-            
-            songComments.forEach(comment => {
-                const commentDiv = document.createElement('div');
-                commentDiv.className = 'mb-4 pb-4 border-b border-gray-200';
-                commentDiv.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-medium">${comment.author || 'Anônimo'}</span>
-                        <span class="text-sm text-gray-500">${new Date(comment.date).toLocaleDateString()}</span>
-                    </div>
-                    <p>${comment.text}</p>
-                `;
-                commentsList.appendChild(commentDiv);
-            });
-        }
-
-        // Check user's dark mode preference
-        function checkDarkModePreference() {
-            if (localStorage.getItem('darkMode') === 'true' || 
-                (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                enableDarkMode();
-            }
-        }
-
-        // Enable dark mode
-        function enableDarkMode() {
-            document.body.classList.add('dark-mode');
-            darkMode = true;
-            localStorage.setItem('darkMode', 'true');
-            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-        }
-
-        // Disable dark mode
-        function disableDarkMode() {
-            document.body.classList.remove('dark-mode');
-            darkMode = false;
-            localStorage.setItem('darkMode', 'false');
-            darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-        }
-
-        // Toggle font size
-        function toggleFontSize() {
-            const sizes = ['small', 'medium', 'large'];
-            const currentIndex = sizes.indexOf(fontSize);
-            const newIndex = (currentIndex + 1) % sizes.length;
-            fontSize = sizes[newIndex];
-            
-            document.body.style.fontSize = fontSize === 'small' ? '14px' : 
-                                          fontSize === 'medium' ? '16px' : '18px';
-            
-            // Update icon
-            const icons = ['fa-font', 'fa-text-height', 'fa-text-width'];
-            fontSizeToggle.innerHTML = `<i class="fas ${icons[newIndex]}"></i>`;
-            
-            localStorage.setItem('fontSize', fontSize);
-        }
-
-        // Sort songs
-        function sortSongs(criteria) {
-            let sortedSongs = [...songs];
-            
-            switch (criteria) {
-                case 'title':
-                    sortedSongs.sort((a, b) => a.title.localeCompare(b.title));
-                    break;
-                case 'artist':
-                    sortedSongs.sort((a, b) => a.artist.localeCompare(b.artist));
-                    break;
-                case 'newest':
-                    sortedSongs.sort((a, b) => new Date(b.added) - new Date(a.added));
-                    break;
-                case 'popular':
-                    sortedSongs.sort((a, b) => b.views - a.views);
-                    break;
-                default:
-                    break;
-            }
-            
-            renderSongList(sortedSongs);
-        }
-
-        // Filter songs by category
-        function filterSongs(category) {
-            if (category === 'all') {
-                renderSongList();
-                return;
-            }
-            
-            const filteredSongs = songs.filter(song => song.category === category);
-            renderSongList(filteredSongs);
-        }
-
-        // Event listeners
-        searchInput.addEventListener('input', () => searchSongs(searchInput.value));
-        searchButton.addEventListener('click', () => searchSongs(searchInput.value));
-        
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.classList.add('hidden');
-            }
-        });
-        
-        darkModeToggle.addEventListener('click', () => {
-            if (darkMode) {
-                disableDarkMode();
-            } else {
-                enableDarkMode();
-            }
-        });
-        
-        fontSizeToggle.addEventListener('click', toggleFontSize);
-        
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                scrollToTop.style.display = 'block';
-            } else {
-                scrollToTop.style.display = 'none';
-            }
-        });
-        
-        scrollToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-        
-        closeDetail.addEventListener('click', () => {
-            songDetail.classList.add('hidden');
-            songList.classList.remove('hidden');
-        });
-        
-        printSong.addEventListener('click', () => {
-            window.print();
-        });
-        
-        favoriteSong.addEventListener('click', () => {
-            if (!currentSong) return;
-            
-            const songId = currentSong.id;
-            const index = favorites.indexOf(songId);
-            
-            if (index === -1) {
-                favorites.push(songId);
-                favoriteSong.innerHTML = '<i class="fas fa-heart"></i>';
-            } else {
-                favorites.splice(index, 1);
-                favoriteSong.innerHTML = '<i class="far fa-heart"></i>';
-            }
-            
-            localStorage.setItem('favorites', JSON.stringify(favorites));
-        });
-        
-        transposeUp.addEventListener('click', () => transposeChords(1));
-        transposeDown.addEventListener('click', () => transposeChords(-1));
-        
-        sortSelect.addEventListener('change', (e) => {
-            sortSongs(e.target.value);
-        });
-        
-        document.querySelectorAll('[data-category]').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                filterSongs(e.target.dataset.category);
-            });
-        });
-        
-        submitComment.addEventListener('click', () => {
-            if (!currentSong || !commentInput.value.trim()) return;
-            
-            const newComment = {
-                text: commentInput.value.trim(),
-                author: 'Usuário', // In a real app, this would be the logged in user
-                date: new Date().toISOString()
-            };
-            
-            comments[currentSong.id].unshift(newComment);
-            localStorage.setItem('comments', JSON.stringify(comments));
-            
-            displayComments(currentSong.id);
-            commentInput.value = '';
-        });
-        
-        // Allow submitting comment with Enter key
-        commentInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                submitComment.click();
-            }
-        });
-        
-        // Capo buttons
-        document.querySelectorAll('.capo-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const capoPosition = parseInt(e.target.dataset.capo);
-                transposeChords(-capoPosition); // Using capo effectively transposes down
-                
-                // Highlight selected capo button
-                document.querySelectorAll('.capo-btn').forEach(btn => {
-                    btn.classList.remove('bg-blue-500', 'text-white');
-                    btn.classList.add('bg-blue-100', 'text-blue-800');
-                });
-                
-                e.target.classList.remove('bg-blue-100', 'text-blue-800');
-                e.target.classList.add('bg-blue-500', 'text-white');
-            });
-        });
-        
-        // Play audio (simulated)
-        playAudio.addEventListener('click', () => {
-            playAudio.innerHTML = '<i class="fas fa-pause"></i>';
-            setTimeout(() => {
-                playAudio.innerHTML = '<i class="fas fa-play"></i>';
-            }, 3000);
-        });
-        
-        // Metronome toggle (simulated)
-        metronomeToggle.addEventListener('click', () => {
-            if (metronomeToggle.innerHTML.includes('stopwatch')) {
-                metronomeToggle.innerHTML = '<i class="fas fa-stopwatch-20"></i>';
-                metronomeToggle.classList.remove('bg-gray-200', 'text-gray-800');
-                metronomeToggle.classList.add('bg-red-500', 'text-white');
-            } else {
-                metronomeToggle.innerHTML = '<i class="fas fa-stopwatch"></i>';
-                metronomeToggle.classList.remove('bg-red-500', 'text-white');
-                metronomeToggle.classList.add('bg-gray-200', 'text-gray-800');
-            }
-        });
-
-        // Initialize the app
-        init();
-    </script>
+    // Inicialização
+    renderCategories();
+  </script>
 </body>
 </html>
