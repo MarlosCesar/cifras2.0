@@ -29,9 +29,25 @@
     .category-item.swiped .delete-btn, .category-item:hover .delete-btn {
       display: block;
     }
+    .hamburger-overlay {
+      display: none;
+      position: fixed;
+      z-index: 49;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+    }
+    .sidebar-open {
+      transform: translateX(0) !important;
+    }
+    .sidebar-closed {
+      transform: translateX(-100%) !important;
+    }
     @media (min-width: 768px) {
-      #sidebarMenu {
-        display: block !important;
+      .sidebar-desktop {
+        width: 320px;
+        left: 40px;
+        top: 80px;
+        border-radius: 0.75rem;
       }
     }
   </style>
@@ -43,17 +59,22 @@
         <i class="fas fa-guitar text-3xl"></i>
         <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
       </div>
-      <button id="hamburgerBtn" class="md:hidden text-3xl"><i class="fas fa-bars"></i></button>
+      <button id="hamburgerBtn" class="text-3xl ml-4"><i class="fas fa-bars"></i></button>
       <p class="hidden md:block ml-12 text-blue-100">Encontre os acordes das suas músicas favoritas</p>
     </div>
   </header>
 
+  <!-- Overlay -->
+  <div id="hamburgerOverlay" class="hamburger-overlay"></div>
+
   <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
     <!-- Sidebar/Menu Hamburguer -->
-    <nav id="sidebarMenu" class="fixed md:static top-0 left-0 h-full w-64 bg-white shadow-lg z-40 p-6 transition-transform -translate-x-full md:translate-x-0 md:w-1/4 md:rounded-lg" style="display:none;">
+    <nav id="sidebarMenu"
+      class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 p-6 transition-transform sidebar-closed sidebar-desktop"
+      style="max-width: 90vw;">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-blue-800">Categorias</h2>
-        <button id="closeSidebar" class="md:hidden text-xl"><i class="fas fa-times"></i></button>
+        <button id="closeSidebar" class="text-xl"><i class="fas fa-times"></i></button>
       </div>
       <ul id="categoriesList" class="space-y-2"></ul>
     </nav>
@@ -172,24 +193,31 @@
       }
     });
 
-    // Responsividade do menu hamburguer
+    // Hamburguer menu (funciona no desktop e no mobile)
     const sidebarMenu = document.getElementById('sidebarMenu');
-    document.getElementById('hamburgerBtn').addEventListener('click', () => {
-      sidebarMenu.style.display = 'block';
-      setTimeout(() => sidebarMenu.classList.remove('-translate-x-full'), 10);
-    });
-    document.getElementById('closeSidebar').addEventListener('click', () => {
-      sidebarMenu.classList.add('-translate-x-full');
-      setTimeout(() => sidebarMenu.style.display = 'none', 300);
-    });
-    // Fecha menu ao clicar fora no mobile
-    document.addEventListener('click', function(e){
-      if (window.innerWidth < 768 &&
-        sidebarMenu.style.display === 'block' &&
-        !sidebarMenu.contains(e.target) &&
-        !e.target.closest('#hamburgerBtn')) {
-        sidebarMenu.classList.add('-translate-x-full');
-        setTimeout(() => sidebarMenu.style.display = 'none', 300);
+    const hamburgerOverlay = document.getElementById('hamburgerOverlay');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const closeSidebar = document.getElementById('closeSidebar');
+
+    function openSidebar() {
+      sidebarMenu.classList.remove('sidebar-closed');
+      sidebarMenu.classList.add('sidebar-open');
+      hamburgerOverlay.style.display = 'block';
+    }
+    function closeSidebarFn() {
+      sidebarMenu.classList.remove('sidebar-open');
+      sidebarMenu.classList.add('sidebar-closed');
+      hamburgerOverlay.style.display = 'none';
+    }
+
+    hamburgerBtn.addEventListener('click', openSidebar);
+    closeSidebar.addEventListener('click', closeSidebarFn);
+    hamburgerOverlay.addEventListener('click', closeSidebarFn);
+
+    // Tecla ESC fecha o menu
+    document.addEventListener('keydown', function(e){
+      if (e.key === "Escape" && sidebarMenu.classList.contains('sidebar-open')) {
+        closeSidebarFn();
       }
     });
 
