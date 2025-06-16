@@ -17,11 +17,17 @@
         <button id="hamburgerBtn" class="text-3xl mr-4"><i class="fas fa-bars"></i></button>
         <i class="fas fa-guitar text-3xl"></i>
         <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
-        <!-- Dropdown de cifras -->
-        <div class="ml-4">
-          <select id="dropdownCifras" class="px-2 py-1 rounded text-gray-800">
-            <option value="">Selecione uma cifra</option>
-          </select>
+        <!-- Campo de busca/autocomplete -->
+        <div class="ml-4 relative" style="min-width:220px;">
+          <input
+            id="autocompleteCifras"
+            type="text"
+            class="px-2 py-1 rounded text-gray-800 w-full"
+            placeholder="Buscar cifra..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <ul id="autocompleteList" class="absolute z-50 left-0 right-0 bg-white text-gray-900 rounded shadow-lg mt-1 hidden max-h-56 overflow-y-auto"></ul>
         </div>
       </div>
       <div class="flex items-center">
@@ -44,11 +50,7 @@
         <button id="closeSidebar" class="text-xl"><i class="fas fa-times"></i></button>
       </div>
       <ul id="categoriesList" class="space-y-2"></ul>
-      <div class="mt-8">
-        <button id="btnReloadCifras" class="w-full px-4 py-2 bg-blue-500 text-white rounded mt-3 flex items-center justify-center gap-2">
-          <i class="fas fa-sync"></i> Recarregar Cifras
-        </button>
-      </div>
+      <!-- Botão "Recarregar Cifras" removido -->
     </nav>
 
     <!-- Conteúdo principal -->
