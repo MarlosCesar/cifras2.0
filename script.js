@@ -9,15 +9,11 @@ let isLoadingCifras = false;
 function renderCategories() {
   const ul = document.getElementById('categoriesList');
   ul.innerHTML = '';
-  
+
+  // Botão "+ Adicionar" sempre deve ser o último
+  // Portanto, renderiza as categorias fixas exceto o "+"
   fixedCategories.forEach(cat => {
-    if (cat.name === "+") {
-      ul.innerHTML += `
-        <li>
-          <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
-        </li>
-      `;
-    } else {
+    if (cat.name !== "+") {
       ul.innerHTML += `
         <li>
           <a href="#" class="text-blue-600 hover:text-blue-800 transition block px-2 py-1 rounded ${selectedCategory === cat.id ? 'bg-blue-100 font-bold' : ''}" data-category="${cat.id}">${cat.name}</a>
@@ -25,7 +21,8 @@ function renderCategories() {
       `;
     }
   });
-  
+
+  // Renderiza customCategories antes do botão "+ Adicionar"
   customCategories.forEach((cat, idx) => {
     ul.innerHTML += `
       <li class="relative">
@@ -36,6 +33,13 @@ function renderCategories() {
       </li>
     `;
   });
+
+  // Botão "+ Adicionar" sempre por último
+  ul.innerHTML += `
+    <li>
+      <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
+    </li>
+  `;
 }
 
 // === RENDER CIFRAS ===
@@ -76,6 +80,21 @@ function renderCifras() {
         </div>
       </div>`;
     songList.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+// === PREENCHER DROPDOWN DE CIFRAS ===
+function fillDropdownCifras() {
+  const dropdown = document.getElementById('dropdownCifras');
+  if (!dropdown) return;
+  // Ordena alfabeticamente sem considerar acentuação
+  const cifrasOrdenadas = [...allCifras].sort((a, b) =>
+    a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+  );
+  dropdown.innerHTML = `<option value="">Selecione uma cifra</option>`;
+  cifrasOrdenadas.forEach(file => {
+    const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
+    dropdown.innerHTML += `<option value="${file.id}">${nomeSemExt}</option>`;
   });
 }
 
@@ -128,10 +147,12 @@ async function loadCifras() {
   try {
     allCifras = await listDriveCifras();
     renderCifras();
+    fillDropdownCifras();
   } catch (e) {
     document.getElementById('erroCifras').textContent = "Erro ao acessar o Google Drive: " + e.message;
     document.getElementById('erroCifras').classList.remove('hidden');
     allCifras = [];
+    fillDropdownCifras();
   }
   
   document.getElementById('loadingCifras').classList.add('hidden');
@@ -203,30 +224,31 @@ function initializeCategoryEvents() {
       selectedCategory = e.target.dataset.category;
       renderCategories();
       renderCifras();
+      fillDropdownCifras();
     }
   });
 
   // Adição de categoria customizada
-document.getElementById('categoriesList').addEventListener('click', function(e){
-  if (e.target.id === "addCategoryBtn") {
-    const li = e.target.closest('li');
-    li.innerHTML = `
-      <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
-      <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
-    `;
-    setTimeout(() => document.getElementById('newCatInput').focus(), 100);
-  }
-  
-  if (e.target.id === "saveCatBtn" || e.target.closest("#saveCatBtn")) {
-    const input = document.getElementById('newCatInput');
-    if (input && input.value.trim()) {
-      const value = input.value.trim();
-      const id = value;
-      customCategories.unshift({ name: value, id }); // <-- Aqui está a alteração
-      localStorage.setItem('customCategories', JSON.stringify(customCategories));
-      renderCategories();
+  document.getElementById('categoriesList').addEventListener('click', function(e){
+    if (e.target.id === "addCategoryBtn") {
+      const li = e.target.closest('li');
+      li.innerHTML = `
+        <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
+        <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
+      `;
+      setTimeout(() => document.getElementById('newCatInput').focus(), 100);
     }
-  }
+    
+    if (e.target.id === "saveCatBtn" || e.target.closest("#saveCatBtn")) {
+      const input = document.getElementById('newCatInput');
+      if (input && input.value.trim()) {
+        const value = input.value.trim();
+        const id = value;
+        customCategories.unshift({ name: value, id }); // Adiciona no início da lista
+        localStorage.setItem('customCategories', JSON.stringify(customCategories));
+        renderCategories();
+      }
+    }
     
     if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
       const idx = e.target.dataset.idx || e.target.closest('.delete-btn').dataset.idx;
@@ -312,4 +334,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Inicializa renderização de categorias
   renderCategories();
+
+  // Evento para dropdown de cifras
+  const dropdown = document.getElementById('dropdownCifras');
+  if (dropdown) {
+    dropdown.addEventListener("change", function() {
+      if (this.value) {
+        const file = allCifras.find(f => f.id === this.value);
+        if (file) {
+          const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
+          openCifraModal(file.id, nomeSemExt);
+          this.selectedIndex = 0; // volta para o placeholder após abrir
+        }
+      }
+    });
+  }
 });
