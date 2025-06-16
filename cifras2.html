@@ -3,41 +3,239 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dropdown Cifras Google Drive</title>
+  <title>ChordVerse - Cifras Google Drive</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .category-item {
+      transition: transform 0.3s;
+      user-select: none;
+      touch-action: pan-y;
+    }
+    .category-item.swiped {
+      transform: translateX(-60px);
+    }
+    .delete-btn {
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      background: #f87171;
+      color: white;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.75rem;
+      z-index: 10;
+    }
+    .category-item.swiped .delete-btn, .category-item:hover .delete-btn {
+      display: block;
+    }
+    .hamburger-overlay {
+      display: none;
+      position: fixed;
+      z-index: 49;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+    }
+    .sidebar-open {
+      transform: translateX(0) !important;
+    }
+    .sidebar-closed {
+      transform: translateX(-100%) !important;
+    }
+    @media (min-width: 768px) {
+      .sidebar-desktop {
+        width: 320px;
+        left: 40px;
+        top: 80px;
+        border-radius: 0.75rem;
+      }
+    }
+    .full-screen-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+      padding: 32px 8px;
+      color: #fff;
+    }
+    .full-screen-modal pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1.1rem;
+      font-family: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+    }
+    .miniatura-cifra {
+      width: 48px;
+      height: 48px;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      font-size: 2rem;
+      color: #fff;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .miniatura-cifra:hover {
+      background: #1d4ed8;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
 
   <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
     <div class="container mx-auto px-4 py-6 flex justify-between items-center">
-      <h1 class="text-2xl md:text-3xl font-bold">Dropdown Cifras Google Drive</h1>
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-guitar text-3xl"></i>
+        <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
+      </div>
+      <button id="hamburgerBtn" class="text-3xl ml-4"><i class="fas fa-bars"></i></button>
+      <p class="hidden md:block ml-12 text-blue-100">Encontre as cifras na sua pasta do Google Drive</p>
+      <button id="btnGoogleSignOut" class="ml-4 px-3 py-2 bg-red-600 text-white rounded hidden" title="Sair do Google"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </header>
 
-  <main class="container mx-auto px-4 py-8">
-    <div class="my-4 flex items-center space-x-2">
-      <label for="dropdownCifras" class="font-bold text-blue-700">Cifras do Drive:</label>
-      <select id="dropdownCifras" class="border rounded px-3 py-2 min-w-[200px]">
-        <option>Carregando...</option>
-      </select>
-      <button id="btnReloadCifras" class="ml-2 px-2 py-1 bg-blue-500 text-white rounded" title="Recarregar"><i class="fas fa-sync"></i></button>
-      <button id="btnGoogleSignOut" class="ml-2 px-2 py-1 bg-red-500 text-white rounded" title="Sair do Google" style="display:none"><i class="fas fa-sign-out-alt"></i></button>
-    </div>
-    <div id="cifraInfo" class="mt-4 text-blue-800"></div>
+  <!-- Overlay -->
+  <div id="hamburgerOverlay" class="hamburger-overlay"></div>
+
+  <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+    <!-- Sidebar/Menu Hamburguer -->
+    <nav id="sidebarMenu"
+      class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 p-6 transition-transform sidebar-closed sidebar-desktop"
+      style="max-width: 90vw;">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-blue-800">Categorias</h2>
+        <button id="closeSidebar" class="text-xl"><i class="fas fa-times"></i></button>
+      </div>
+      <ul id="categoriesList" class="space-y-2"></ul>
+      <div class="mt-8">
+        <button id="btnReloadCifras" class="w-full px-4 py-2 bg-blue-500 text-white rounded mt-3 flex items-center justify-center gap-2">
+          <i class="fas fa-sync"></i> Recarregar Cifras
+        </button>
+      </div>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <section class="md:w-3/4 flex-1">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Cifras Disponíveis</h2>
+      <div id="songList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <div id="loadingCifras" class="text-blue-700 text-center py-8 hidden">
+        <i class="fas fa-spinner fa-spin"></i> Carregando cifras...
+      </div>
+      <div id="erroCifras" class="text-red-600 text-center py-8 hidden"></div>
+    </section>
   </main>
 
-  <!-- Google API -->
+  <!-- Modal Tela Cheia -->
+  <div id="modalCifra" class="full-screen-modal hidden">
+    <div class="relative w-full max-w-3xl bg-gray-900 rounded-lg p-8 shadow-2xl mx-auto my-8">
+      <button id="closeModalCifra" class="absolute top-4 right-4 text-xl text-gray-300 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+      <h2 id="modalCifraTitulo" class="text-2xl font-bold mb-4 text-blue-200"></h2>
+      <pre id="modalCifraContent" class="overflow-x-auto"></pre>
+    </div>
+  </div>
+
   <script src="https://apis.google.com/js/api.js"></script>
   <script>
+    // === CONFIGURAÇÃO GOOGLE DRIVE ===
     const GOOGLE_DRIVE_FOLDER_ID = "1OzrvB4NCBRTDgMsE_AhQy0b11bdn3v82";
     const GOOGLE_API_KEY = "AIzaSyD2qLxX7fYIMxt34aeWWDsx_nWaSsFCguk";
     const GOOGLE_CLIENT_ID = "977942417278-0mfg7iehelnjfqmk5a32elsr7ll8hkil.apps.googleusercontent.com";
     const GOOGLE_SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
-    let gapiInitialized = false;
+    // === CATEGORIAS ===
+    const fixedCategories = [
+      { name: "Domingo Manhã", id: "Domingo Manhã" },
+      { name: "Domingo Noite", id: "Domingo Noite" },
+      { name: "Segunda", id: "Segunda" },
+      { name: "Quarta", id: "Quarta" },
+      { name: "+", id: "adicionar" }
+    ];
+    let customCategories = JSON.parse(localStorage.getItem('customCategories') || '[]');
+    let selectedCategory = fixedCategories[0].id; // Default selecionado
 
-    // Inicializa a API do Google
+    // === ESTADO DAS CIFRAS ===
+    let allCifras = [];
+    let gapiInitialized = false;
+    let isLoadingCifras = false;
+
+    // === RENDER CATEGORIAS ===
+    function renderCategories() {
+      const ul = document.getElementById('categoriesList');
+      ul.innerHTML = '';
+      fixedCategories.forEach(cat => {
+        if (cat.name === "+") {
+          ul.innerHTML += `
+            <li>
+              <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
+            </li>
+          `;
+        } else {
+          ul.innerHTML += `
+            <li>
+              <a href="#" class="text-blue-600 hover:text-blue-800 transition block px-2 py-1 rounded ${selectedCategory === cat.id ? 'bg-blue-100 font-bold' : ''}" data-category="${cat.id}">${cat.name}</a>
+            </li>
+          `;
+        }
+      });
+      customCategories.forEach((cat, idx) => {
+        ul.innerHTML += `
+          <li class="relative">
+            <div class="category-item px-2 py-1 rounded flex items-center group relative ${selectedCategory === cat.id ? 'bg-blue-100 font-bold' : ''}" data-idx="${idx}" draggable="false">
+              <span class="flex-grow text-blue-600 hover:text-blue-800 transition cursor-pointer" data-category="${cat.id}">${cat.name}</span>
+              <button class="delete-btn" data-idx="${idx}"><i class="fas fa-trash"></i></button>
+            </div>
+          </li>
+        `;
+      });
+    }
+
+    // === RENDER CIFRAS ===
+    function renderCifras() {
+      const songList = document.getElementById('songList');
+      const loading = document.getElementById('loadingCifras');
+      const erro = document.getElementById('erroCifras');
+      loading.classList.add('hidden');
+      erro.classList.add('hidden');
+      songList.innerHTML = '';
+      // Filtrar por categoria
+      let filtered = allCifras;
+      if (selectedCategory) {
+        filtered = allCifras.filter(cifra => {
+          // Checa se o nome da categoria aparece no nome da cifra (pode ser custom ou fixa)
+          // Ex: "Domingo Manhã - Nome da Cifra.txt"
+          return cifra.name.toLowerCase().includes(selectedCategory.toLowerCase());
+        });
+      }
+      if (!filtered.length) {
+        songList.innerHTML = `<div class="col-span-full text-center text-gray-500 py-16">Nenhuma cifra para esta categoria.</div>`;
+        return;
+      }
+      filtered.forEach(file => {
+        const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
+        const html = `
+          <div class="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 cifra-card hover:ring-2 hover:ring-blue-400 transition relative">
+            <div class="miniatura-cifra" data-fileid="${file.id}" data-nome="${nomeSemExt}" title="Abrir cifra">
+              <i class="fas fa-music"></i>
+            </div>
+            <div class="flex-1">
+              <span class="block font-bold text-lg text-blue-700">${nomeSemExt}</span>
+              <span class="block text-xs text-gray-400 mt-1">${file.mimeType}</span>
+            </div>
+          </div>`;
+        songList.insertAdjacentHTML('beforeend', html);
+      });
+    }
+
+    // === GOOGLE DRIVE ===
     function gapiLoadAndInit(callback) {
       gapi.load('client:auth2', async function() {
         await gapi.client.init({
@@ -51,84 +249,197 @@
       });
     }
 
-    // Faz login se necessário
     async function ensureGoogleAuth() {
       const authInstance = gapi.auth2.getAuthInstance();
       if (!authInstance.isSignedIn.get()) {
         await authInstance.signIn();
-        document.getElementById("btnGoogleSignOut").style.display = "";
+        document.getElementById("btnGoogleSignOut").classList.remove("hidden");
       }
     }
 
-    // Logout
     function signOutGoogle() {
       const authInstance = gapi.auth2.getAuthInstance();
       if (authInstance && authInstance.isSignedIn.get()) {
         authInstance.signOut().then(() => {
-          document.getElementById("btnGoogleSignOut").style.display = "none";
-          document.getElementById("dropdownCifras").innerHTML = `<option>Faça login novamente para ver as cifras</option>`;
+          document.getElementById("btnGoogleSignOut").classList.add("hidden");
+          document.getElementById("songList").innerHTML = `<div class="col-span-full text-center text-gray-600 py-20">Faça login novamente para ver as cifras.</div>`;
         });
       }
     }
 
-    // Lista arquivos na pasta do Drive
     async function listDriveCifras() {
       await ensureGoogleAuth();
       const res = await gapi.client.drive.files.list({
         q: `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and trashed = false`,
         fields: "files(id, name, mimeType)",
-        pageSize: 100
+        pageSize: 200
       });
       return res.result.files;
     }
 
-    // Preenche o dropdown com os nomes das cifras
-    async function fillDropdownCifras() {
-      const select = document.getElementById('dropdownCifras');
-      select.innerHTML = `<option>Carregando...</option>`;
+    async function loadCifras() {
+      isLoadingCifras = true;
+      document.getElementById('loadingCifras').classList.remove('hidden');
       try {
-        const files = await listDriveCifras();
-        if (!files || !files.length) {
-          select.innerHTML = `<option>Nenhuma cifra encontrada</option>`;
-          return;
-        }
-        select.innerHTML = '';
-        files.forEach(file => {
-          // Oculta extensão do arquivo
-          const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
-          const opt = document.createElement('option');
-          opt.value = file.id;
-          opt.textContent = nomeSemExt;
-          select.appendChild(opt);
-        });
+        allCifras = await listDriveCifras();
+        renderCifras();
       } catch (e) {
-        select.innerHTML = `<option>Erro ao carregar</option>`;
-        alert("Erro ao acessar o Google Drive: " + e.message);
+        document.getElementById('erroCifras').textContent = "Erro ao acessar o Google Drive: " + e.message;
+        document.getElementById('erroCifras').classList.remove('hidden');
+        allCifras = [];
+      }
+      document.getElementById('loadingCifras').classList.add('hidden');
+      isLoadingCifras = false;
+    }
+
+    // === FULLSCREEN MODAL PARA CIFRA ===
+    async function openCifraModal(fileId, nomeCifra) {
+      const modal = document.getElementById('modalCifra');
+      const titulo = document.getElementById('modalCifraTitulo');
+      const content = document.getElementById('modalCifraContent');
+      titulo.textContent = nomeCifra;
+      content.textContent = "Carregando...";
+      modal.classList.remove('hidden');
+      try {
+        await ensureGoogleAuth();
+        // Pega o conteúdo
+        const file = await gapi.client.drive.files.get({
+          fileId,
+          alt: 'media'
+        });
+        // Pode ser text, pdf, etc. Aqui exibimos somente texto (cifras txt)
+        if (typeof file.body === "string") {
+          content.textContent = file.body;
+        } else {
+          content.textContent = "Não foi possível exibir o conteúdo deste arquivo.";
+        }
+      } catch (e) {
+        content.textContent = "Erro ao carregar cifra: " + e.message;
       }
     }
 
-    // Exemplo de ação ao selecionar uma cifra
+    // === EVENTOS ===
     document.addEventListener("DOMContentLoaded", () => {
-      gapiLoadAndInit(fillDropdownCifras);
+      // GOOGLE
+      gapiLoadAndInit(() => {
+        document.getElementById("btnGoogleSignOut").addEventListener("click", signOutGoogle);
+        loadCifras();
+      });
 
-      // Evento para recarregar
-      document.getElementById('btnReloadCifras').addEventListener('click', fillDropdownCifras);
-
-      // Evento para logout
-      document.getElementById('btnGoogleSignOut').addEventListener('click', signOutGoogle);
-
-      // Ao selecionar uma cifra
-      document.getElementById('dropdownCifras').addEventListener('change', function() {
-        const fileId = this.value;
-        const cifraName = this.options[this.selectedIndex].text;
-        if (fileId) {
-          document.getElementById('cifraInfo').textContent = `Cifra selecionada: ${cifraName}`;
-          // Aqui você pode chamar uma função para exibir ou baixar a cifra selecionada
-          // Exemplo: downloadDriveFile(fileId);
-        } else {
-          document.getElementById('cifraInfo').textContent = '';
+      // MENU HAMBURGUER
+      const sidebarMenu = document.getElementById('sidebarMenu');
+      const hamburgerOverlay = document.getElementById('hamburgerOverlay');
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const closeSidebar = document.getElementById('closeSidebar');
+      hamburgerBtn.addEventListener('click', openSidebar);
+      closeSidebar.addEventListener('click', closeSidebarFn);
+      hamburgerOverlay.addEventListener('click', closeSidebarFn);
+      function openSidebar() {
+        sidebarMenu.classList.remove('sidebar-closed');
+        sidebarMenu.classList.add('sidebar-open');
+        hamburgerOverlay.style.display = 'block';
+      }
+      function closeSidebarFn() {
+        sidebarMenu.classList.remove('sidebar-open');
+        sidebarMenu.classList.add('sidebar-closed');
+        hamburgerOverlay.style.display = 'none';
+      }
+      document.addEventListener('keydown', function(e){
+        if (e.key === "Escape" && sidebarMenu.classList.contains('sidebar-open')) {
+          closeSidebarFn();
         }
       });
+
+      // CATEGORIAS (seleção/filtro)
+      document.getElementById('categoriesList').addEventListener('click', function(e){
+        if (e.target.dataset.category) {
+          selectedCategory = e.target.dataset.category;
+          renderCategories();
+          renderCifras();
+        }
+      });
+
+      // Adição de categoria customizada
+      document.getElementById('categoriesList').addEventListener('click', function(e){
+        if (e.target.id === "addCategoryBtn") {
+          const li = e.target.closest('li');
+          li.innerHTML = `
+            <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
+            <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
+          `;
+          setTimeout(() => document.getElementById('newCatInput').focus(), 100);
+        }
+        if (e.target.id === "saveCatBtn" || e.target.closest("#saveCatBtn")) {
+          const input = document.getElementById('newCatInput');
+          if (input && input.value.trim()) {
+            const value = input.value.trim();
+            const id = value;
+            customCategories.push({ name: value, id });
+            localStorage.setItem('customCategories', JSON.stringify(customCategories));
+            renderCategories();
+          }
+        }
+        if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+          const idx = e.target.dataset.idx || e.target.closest('.delete-btn').dataset.idx;
+          customCategories.splice(idx, 1);
+          localStorage.setItem('customCategories', JSON.stringify(customCategories));
+          renderCategories();
+          if (selectedCategory === customCategories[idx]?.id) {
+            selectedCategory = fixedCategories[0].id;
+          }
+        }
+      });
+
+      // Swipe para deletar categoria customizada
+      let startX = 0, swipedIdx = null;
+      document.getElementById('categoriesList').addEventListener('touchstart', function(e){
+        const item = e.target.closest('.category-item');
+        if (item) {
+          startX = e.touches[0].clientX;
+          swipedIdx = item.dataset.idx;
+        }
+      });
+      document.getElementById('categoriesList').addEventListener('touchmove', function(e){
+        if (swipedIdx !== null) {
+          const item = document.querySelector(`.category-item[data-idx="${swipedIdx}"]`);
+          if (item) {
+            let diff = e.touches[0].clientX - startX;
+            if (diff < -30) item.classList.add('swiped');
+            else item.classList.remove('swiped');
+          }
+        }
+      });
+      document.getElementById('categoriesList').addEventListener('touchend', function(){
+        swipedIdx = null;
+      });
+
+      // Recarregar cifras
+      document.getElementById('btnReloadCifras').addEventListener('click', () => {
+        if (!isLoadingCifras) loadCifras();
+      });
+
+      // Abrir cifra em tela cheia
+      document.getElementById('songList').addEventListener('click', function(e) {
+        const miniatura = e.target.closest('.miniatura-cifra');
+        if (miniatura) {
+          const fileId = miniatura.dataset.fileid;
+          const nome = miniatura.dataset.nome;
+          openCifraModal(fileId, nome);
+        }
+      });
+
+      // Fechar modal cifra
+      document.getElementById('closeModalCifra').addEventListener('click', () => {
+        document.getElementById('modalCifra').classList.add('hidden');
+      });
+      document.getElementById('modalCifra').addEventListener('click', function(e){
+        if (e.target === this) {
+          this.classList.add('hidden');
+        }
+      });
+
+      // Inicializa renderização de categorias
+      renderCategories();
     });
   </script>
 </body>
