@@ -83,19 +83,92 @@ function renderCifras() {
   });
 }
 
-// === PREENCHER DROPDOWN DE CIFRAS ===
-function fillDropdownCifras() {
-  const dropdown = document.getElementById('dropdownCifras');
-  if (!dropdown) return;
-  // Ordena alfabeticamente sem considerar acentuação
-  const cifrasOrdenadas = [...allCifras].sort((a, b) =>
-    a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
-  );
-  dropdown.innerHTML = `<option value="">Selecione uma cifra</option>`;
-  cifrasOrdenadas.forEach(file => {
-    const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
-    dropdown.innerHTML += `<option value="${file.id}">${nomeSemExt}</option>`;
+// === AUTOCOMPLETE BUSCA CIFRAS ===
+function setupAutocompleteCifras() {
+  const input = document.getElementById('autocompleteCifras');
+  const list = document.getElementById('autocompleteList');
+  if (!input || !list) return;
+
+  let filtered = [];
+  let activeIndex = -1;
+
+  function closeDropdown() {
+    list.classList.add('hidden');
+    list.innerHTML = '';
+    activeIndex = -1;
+  }
+
+  input.addEventListener('input', function () {
+    const value = this.value.trim().toLowerCase();
+    if (!value) {
+      closeDropdown();
+      return;
+    }
+    // Busca com base no nome sem extensão
+    filtered = allCifras
+      .map(f => ({ ...f, nomeSemExt: f.name.replace(/\.[^/.]+$/, "") }))
+      .filter(f => f.nomeSemExt.toLowerCase().includes(value))
+      .sort((a, b) => a.nomeSemExt.localeCompare(b.nomeSemExt, 'pt-BR', { sensitivity: 'base' }));
+
+    if (!filtered.length) {
+      closeDropdown();
+      return;
+    }
+
+    list.innerHTML = filtered
+      .map((f, idx) => `<li data-idx="${idx}" ${idx === 0 ? 'class="active"' : ''}>${f.nomeSemExt}</li>`)
+      .join('');
+    list.classList.remove('hidden');
+    activeIndex = 0;
   });
+
+  input.addEventListener('keydown', function (e) {
+    if (list.classList.contains('hidden')) return;
+    if (e.key === "ArrowDown") {
+      activeIndex = (activeIndex + 1) % filtered.length;
+      updateActive();
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
+      updateActive();
+      e.preventDefault();
+    } else if (e.key === "Enter") {
+      if (filtered[activeIndex]) {
+        openCifraModal(filtered[activeIndex].id, filtered[activeIndex].nomeSemExt);
+        input.value = "";
+        closeDropdown();
+        e.preventDefault();
+      }
+    } else if (e.key === "Escape") {
+      closeDropdown();
+    }
+  });
+
+  list.addEventListener('mousedown', function (e) {
+    const li = e.target.closest('li[data-idx]');
+    if (li) {
+      const idx = parseInt(li.dataset.idx, 10);
+      openCifraModal(filtered[idx].id, filtered[idx].nomeSemExt);
+      input.value = "";
+      closeDropdown();
+      // Não deixa o input perder o foco
+      e.preventDefault();
+    }
+  });
+
+  input.addEventListener('blur', function () {
+    setTimeout(closeDropdown, 120); // Permite clicar no item
+  });
+
+  function updateActive() {
+    const items = Array.from(list.children);
+    items.forEach((li, idx) => {
+      li.classList.toggle('active', idx === activeIndex);
+    });
+    if (items[activeIndex]) {
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
 }
 
 // === GOOGLE DRIVE ===
@@ -147,12 +220,10 @@ async function loadCifras() {
   try {
     allCifras = await listDriveCifras();
     renderCifras();
-    fillDropdownCifras();
   } catch (e) {
     document.getElementById('erroCifras').textContent = "Erro ao acessar o Google Drive: " + e.message;
     document.getElementById('erroCifras').classList.remove('hidden');
     allCifras = [];
-    fillDropdownCifras();
   }
   
   document.getElementById('loadingCifras').classList.add('hidden');
@@ -224,7 +295,6 @@ function initializeCategoryEvents() {
       selectedCategory = e.target.dataset.category;
       renderCategories();
       renderCifras();
-      fillDropdownCifras();
     }
   });
 
@@ -326,27 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeCategoryEvents();
   initializeSwipeEvents();
   initializeCifraEvents();
-
-  // Recarregar cifras
-  document.getElementById('btnReloadCifras').addEventListener('click', () => {
-    if (!isLoadingCifras) loadCifras();
-  });
+  setupAutocompleteCifras();
 
   // Inicializa renderização de categorias
   renderCategories();
-
-  // Evento para dropdown de cifras
-  const dropdown = document.getElementById('dropdownCifras');
-  if (dropdown) {
-    dropdown.addEventListener("change", function() {
-      if (this.value) {
-        const file = allCifras.find(f => f.id === this.value);
-        if (file) {
-          const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
-          openCifraModal(file.id, nomeSemExt);
-          this.selectedIndex = 0; // volta para o placeholder após abrir
-        }
-      }
-    });
-  }
 });
