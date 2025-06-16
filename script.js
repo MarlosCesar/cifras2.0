@@ -207,26 +207,26 @@ function initializeCategoryEvents() {
   });
 
   // Adição de categoria customizada
-  document.getElementById('categoriesList').addEventListener('click', function(e){
-    if (e.target.id === "addCategoryBtn") {
-      const li = e.target.closest('li');
-      li.innerHTML = `
-        <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
-        <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
-      `;
-      setTimeout(() => document.getElementById('newCatInput').focus(), 100);
+document.getElementById('categoriesList').addEventListener('click', function(e){
+  if (e.target.id === "addCategoryBtn") {
+    const li = e.target.closest('li');
+    li.innerHTML = `
+      <input id="newCatInput" type="text" class="border px-2 py-1 rounded w-2/3" placeholder="Nova categoria">
+      <button id="saveCatBtn" class="ml-2 text-green-600"><i class="fas fa-check"></i></button>
+    `;
+    setTimeout(() => document.getElementById('newCatInput').focus(), 100);
+  }
+  
+  if (e.target.id === "saveCatBtn" || e.target.closest("#saveCatBtn")) {
+    const input = document.getElementById('newCatInput');
+    if (input && input.value.trim()) {
+      const value = input.value.trim();
+      const id = value;
+      customCategories.unshift({ name: value, id }); // <-- Aqui está a alteração
+      localStorage.setItem('customCategories', JSON.stringify(customCategories));
+      renderCategories();
     }
-    
-    if (e.target.id === "saveCatBtn" || e.target.closest("#saveCatBtn")) {
-      const input = document.getElementById('newCatInput');
-      if (input && input.value.trim()) {
-        const value = input.value.trim();
-        const id = value;
-        customCategories.push({ name: value, id });
-        localStorage.setItem('customCategories', JSON.stringify(customCategories));
-        renderCategories();
-      }
-    }
+  }
     
     if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
       const idx = e.target.dataset.idx || e.target.closest('.delete-btn').dataset.idx;
