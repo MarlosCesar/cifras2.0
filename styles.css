@@ -88,3 +88,9 @@
 .miniatura-cifra:hover {
   background: #1d4ed8;
 }
+
+/* Garantir espaçamento do botão hamburguer na esquerda */
+#hamburgerBtn {
+  margin-left: 0;
+  margin-right: 1rem;
+}
