@@ -10,8 +10,7 @@ function renderCategories() {
   const ul = document.getElementById('categoriesList');
   ul.innerHTML = '';
 
-  // Botão "+ Adicionar" sempre deve ser o último
-  // Portanto, renderiza as categorias fixas exceto o "+"
+  // Renderiza as categorias fixas (exceto o "+")
   fixedCategories.forEach(cat => {
     if (cat.name !== "+") {
       ul.innerHTML += `
@@ -22,7 +21,7 @@ function renderCategories() {
     }
   });
 
-  // Renderiza customCategories antes do botão "+ Adicionar"
+  // Renderiza as categorias customizadas
   customCategories.forEach((cat, idx) => {
     ul.innerHTML += `
       <li class="relative">
