@@ -55,8 +55,6 @@ function renderCifras() {
   let filtered = allCifras;
   if (selectedCategory) {
     filtered = allCifras.filter(cifra => {
-      // Checa se o nome da categoria aparece no nome da cifra (pode ser custom ou fixa)
-      // Ex: "Domingo Manhã - Nome da Cifra.txt"
       return cifra.name.toLowerCase().includes(selectedCategory.toLowerCase());
     });
   }
@@ -88,6 +86,12 @@ function setupAutocompleteCifras() {
   const list = document.getElementById('autocompleteList');
   if (!input || !list) return;
 
+  // Remove event listeners antigos para evitar duplicidade
+  input.oninput = null;
+  input.onkeydown = null;
+  input.onblur = null;
+  list.onmousedown = null;
+
   let filtered = [];
   let activeIndex = -1;
 
@@ -97,13 +101,12 @@ function setupAutocompleteCifras() {
     activeIndex = -1;
   }
 
-  input.addEventListener('input', function () {
+  input.oninput = function () {
     const value = this.value.trim().toLowerCase();
     if (!value) {
       closeDropdown();
       return;
     }
-    // Busca com base no nome sem extensão
     filtered = allCifras
       .map(f => ({ ...f, nomeSemExt: f.name.replace(/\.[^/.]+$/, "") }))
       .filter(f => f.nomeSemExt.toLowerCase().includes(value))
@@ -119,9 +122,9 @@ function setupAutocompleteCifras() {
       .join('');
     list.classList.remove('hidden');
     activeIndex = 0;
-  });
+  };
 
-  input.addEventListener('keydown', function (e) {
+  input.onkeydown = function (e) {
     if (list.classList.contains('hidden')) return;
     if (e.key === "ArrowDown") {
       activeIndex = (activeIndex + 1) % filtered.length;
@@ -141,23 +144,22 @@ function setupAutocompleteCifras() {
     } else if (e.key === "Escape") {
       closeDropdown();
     }
-  });
+  };
 
-  list.addEventListener('mousedown', function (e) {
+  list.onmousedown = function (e) {
     const li = e.target.closest('li[data-idx]');
     if (li) {
       const idx = parseInt(li.dataset.idx, 10);
       openCifraModal(filtered[idx].id, filtered[idx].nomeSemExt);
       input.value = "";
       closeDropdown();
-      // Não deixa o input perder o foco
       e.preventDefault();
     }
-  });
+  };
 
-  input.addEventListener('blur', function () {
-    setTimeout(closeDropdown, 120); // Permite clicar no item
-  });
+  input.onblur = function () {
+    setTimeout(closeDropdown, 120);
+  };
 
   function updateActive() {
     const items = Array.from(list.children);
@@ -219,10 +221,12 @@ async function loadCifras() {
   try {
     allCifras = await listDriveCifras();
     renderCifras();
+    setupAutocompleteCifras(); // Inicializa autocomplete após as cifras carregarem
   } catch (e) {
     document.getElementById('erroCifras').textContent = "Erro ao acessar o Google Drive: " + e.message;
     document.getElementById('erroCifras').classList.remove('hidden');
     allCifras = [];
+    setupAutocompleteCifras();
   }
   
   document.getElementById('loadingCifras').classList.add('hidden');
@@ -246,7 +250,6 @@ async function openCifraModal(fileId, nomeCifra) {
       fileId,
       alt: 'media'
     });
-    // Pode ser text, pdf, etc. Aqui exibimos somente texto (cifras txt)
     if (typeof file.body === "string") {
       content.textContent = file.body;
     } else {
@@ -288,7 +291,6 @@ function initializeMenuEvents() {
 }
 
 function initializeCategoryEvents() {
-  // CATEGORIAS (seleção/filtro)
   document.getElementById('categoriesList').addEventListener('click', function(e){
     if (e.target.dataset.category) {
       selectedCategory = e.target.dataset.category;
@@ -297,7 +299,6 @@ function initializeCategoryEvents() {
     }
   });
 
-  // Adição de categoria customizada
   document.getElementById('categoriesList').addEventListener('click', function(e){
     if (e.target.id === "addCategoryBtn") {
       const li = e.target.closest('li');
@@ -313,7 +314,7 @@ function initializeCategoryEvents() {
       if (input && input.value.trim()) {
         const value = input.value.trim();
         const id = value;
-        customCategories.unshift({ name: value, id }); // Adiciona no início da lista
+        customCategories.unshift({ name: value, id }); // ADICIONA NO INÍCIO
         localStorage.setItem('customCategories', JSON.stringify(customCategories));
         renderCategories();
       }
@@ -332,7 +333,6 @@ function initializeCategoryEvents() {
 }
 
 function initializeSwipeEvents() {
-  // Swipe para deletar categoria customizada
   let startX = 0, swipedIdx = null;
   
   document.getElementById('categoriesList').addEventListener('touchstart', function(e){
@@ -360,7 +360,6 @@ function initializeSwipeEvents() {
 }
 
 function initializeCifraEvents() {
-  // Abrir cifra em tela cheia
   document.getElementById('songList').addEventListener('click', function(e) {
     const miniatura = e.target.closest('.miniatura-cifra');
     if (miniatura) {
@@ -370,7 +369,6 @@ function initializeCifraEvents() {
     }
   });
 
-  // Fechar modal cifra
   document.getElementById('closeModalCifra').addEventListener('click', () => {
     document.getElementById('modalCifra').classList.add('hidden');
   });
@@ -384,19 +382,14 @@ function initializeCifraEvents() {
 
 // === INICIALIZAÇÃO ===
 document.addEventListener("DOMContentLoaded", () => {
-  // GOOGLE
   gapiLoadAndInit(() => {
     document.getElementById("btnGoogleSignOut").addEventListener("click", signOutGoogle);
     loadCifras();
   });
 
-  // Inicializar todos os eventos
   initializeMenuEvents();
   initializeCategoryEvents();
   initializeSwipeEvents();
   initializeCifraEvents();
-  setupAutocompleteCifras();
-
-  // Inicializa renderização de categorias
   renderCategories();
 });
