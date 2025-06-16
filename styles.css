@@ -94,3 +94,20 @@
   margin-left: 0;
   margin-right: 1rem;
 }
+
+/* Autocomplete dropdown custom */
+#autocompleteList {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0px 2px 8px rgba(0,0,0,.08);
+  font-size: 1rem;
+}
+
+#autocompleteList li {
+  cursor: pointer;
+  padding: 8px 12px;
+}
+
+#autocompleteList li:hover, #autocompleteList li.active {
+  background: #2563eb;
+  color: #fff;
+}
