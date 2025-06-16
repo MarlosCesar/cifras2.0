@@ -1,0 +1,90 @@
+.category-item {
+  transition: transform 0.3s;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.category-item.swiped {
+  transform: translateX(-60px);
+}
+
+.delete-btn {
+  display: none;
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  background: #f87171;
+  color: white;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  z-index: 10;
+}
+
+.category-item.swiped .delete-btn, 
+.category-item:hover .delete-btn {
+  display: block;
+}
+
+.hamburger-overlay {
+  display: none;
+  position: fixed;
+  z-index: 49;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+
+.sidebar-open {
+  transform: translateX(0) !important;
+}
+
+.sidebar-closed {
+  transform: translateX(-100%) !important;
+}
+
+@media (min-width: 768px) {
+  .sidebar-desktop {
+    width: 320px;
+    left: 40px;
+    top: 80px;
+    border-radius: 0.75rem;
+  }
+}
+
+.full-screen-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 32px 8px;
+  color: #fff;
+}
+
+.full-screen-modal pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 1.1rem;
+  font-family: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+
+.miniatura-cifra {
+  width: 48px;
+  height: 48px;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-size: 2rem;
+  color: #fff;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.miniatura-cifra:hover {
+  background: #1d4ed8;
+}
