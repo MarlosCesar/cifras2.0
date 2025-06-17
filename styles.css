@@ -151,10 +151,10 @@
   margin-bottom: 8px;
 }
 /* Dark mode */
-body.darkmode, .darkmode .fav-menu {
-  --fav-bg: #181f2b;
-  color: #f3f3f3;
-  background: #181f2b;
+body.darkmode, .darkmode .fav-menu, .darkmode .full-screen-modal, .darkmode .cifra-modal-box {
+  --fav-bg: #000 !important;
+  color: #f3f3f3 !important;
+  background: #000 !important;
 }
 .darkmode .fav-menu-btn {
   color: #f3f3f3;
@@ -165,6 +165,10 @@ body.darkmode, .darkmode .fav-menu {
 .darkmode .fav-menu-toggle {
   background: #101625;
   color: #f3f3f3;
+}
+.darkmode .cifra-modal-box, .darkmode .full-screen-modal pre {
+  background: #000 !important;
+  color: #fff !important;
 }
 /* Responsividade geral */
 .container, .max-w-3xl {
