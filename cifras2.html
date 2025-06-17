@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChordVerse - Cifras Google Drive</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3b8.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -54,7 +53,7 @@
 
     <!-- Conteúdo principal -->
     <section class="md:w-3/4 flex-1">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">Cifras Disponíveis</h2>
+      <h2 id="categoriaTitulo" class="text-2xl font-bold text-gray-800 mb-4">Cifras Disponíveis</h2>
       <div id="songList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       <div id="loadingCifras" class="text-blue-700 text-center py-8 hidden">
         <i class="fas fa-spinner fa-spin"></i> Carregando cifras...
@@ -71,6 +70,7 @@
       </button>
       <h2 id="modalCifraTitulo" class="text-2xl font-bold mb-4 text-blue-200"></h2>
       <pre id="modalCifraContent" class="overflow-x-auto"></pre>
+      <div id="modalAddBtnWrap"></div>
     </div>
   </div>
 
