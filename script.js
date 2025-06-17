@@ -526,7 +526,7 @@ function setupFavMenu() {
           alert('Câmera acionada! (implemente sua lógica)');
           stream.getTracks().forEach(track => track.stop());
         })
-        .catch(() => alert('Não foi possível acessar a câmera!');
+        .catch(() => alert('Não foi possível acessar a câmera!'));
     } else {
       alert('Este navegador não suporta acesso à câmera.');
     }
