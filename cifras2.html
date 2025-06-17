@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="transposer.css">
   <!-- GIS SDK para autenticação Google -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -18,7 +19,6 @@
         <button id="hamburgerBtn" class="text-3xl mr-4"><i class="fas fa-bars"></i></button>
         <i class="fas fa-guitar text-3xl"></i>
         <h1 class="text-2xl md:text-3xl font-bold">ChordVerse</h1>
-        <!-- Campo de busca/autocomplete -->
         <div class="ml-4 relative" style="min-width:220px;">
           <input
             id="autocompleteCifras"
@@ -43,7 +43,6 @@
   <div id="hamburgerOverlay" class="hamburger-overlay"></div>
 
   <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
-    <!-- Sidebar/Menu Hamburguer -->
     <nav id="sidebarMenu"
       class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 p-6 transition-transform sidebar-closed sidebar-desktop"
       style="max-width: 90vw;">
@@ -54,7 +53,6 @@
       <ul id="categoriesList" class="space-y-2"></ul>
     </nav>
 
-    <!-- Conteúdo principal -->
     <section class="md:w-3/4 flex-1">
       <h2 id="categoriaTitulo" class="text-2xl font-bold text-gray-800 mb-4">Cifras Disponíveis</h2>
       <div id="songList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -65,7 +63,6 @@
     </section>
   </main>
 
-  <!-- Fav Menu Flutuante -->
   <div class="fav-menu-container">
     <button class="fav-menu-toggle" id="favMenuToggle" title="Menu Favoritos">
       <i class="fas fa-star"></i>
@@ -81,32 +78,37 @@
 
   <!-- Modal Tela Cheia -->
   <div id="modalCifra" class="full-screen-modal hidden">
-    <div class="relative w-full max-w-3xl bg-gray-900 rounded-lg p-8 shadow-2xl mx-auto my-8">
+    <div class="relative w-full max-w-3xl bg-gray-900 rounded-lg p-8 shadow-2xl mx-auto my-8 cifra-modal-box">
       <button id="closeModalCifra" class="absolute top-4 right-4 text-xl text-gray-300 hover:text-white">
         <i class="fas fa-times"></i>
       </button>
       <h2 id="modalCifraTitulo" class="text-2xl font-bold mb-4 text-blue-200"></h2>
-      <pre id="modalCifraContent" class="overflow-x-auto"></pre>
+      <div class="flex gap-2 mb-2">
+        <button id="btnFullscreenCifra" class="px-3 py-1 rounded bg-gray-700 text-white hover:bg-blue-700"><i class="fas fa-expand"></i> Tela cheia</button>
+        <button id="btnTransposeUp" class="px-3 py-1 rounded bg-blue-800 text-white hover:bg-blue-600"><i class="fas fa-arrow-up"></i> Subir Tom</button>
+        <button id="btnTransposeDown" class="px-3 py-1 rounded bg-blue-800 text-white hover:bg-blue-600"><i class="fas fa-arrow-down"></i> Descer Tom</button>
+        <span id="transposeLabel" class="text-gray-300 ml-2"></span>
+      </div>
+      <pre id="modalCifraContent" class="overflow-x-auto cifra-pre"></pre>
       <div id="modalAddBtnWrap"></div>
     </div>
   </div>
 
   <div id="cifrasSelecionadasContainer" class="flex flex-col items-center py-6 min-h-[60vh] bg-[#f6fbfc]">
-  <!-- Cifras selecionadas aparecerão aqui -->
-</div>
-
-<!-- Botões flutuantes no rodapé -->
-<div id="botoesCifrasFlutuantes"
-     class="fixed inset-x-0 bottom-6 flex justify-center z-50 pointer-events-none">
-  <div class="flex bg-white rounded-xl shadow-xl px-6 py-4 gap-6 pointer-events-auto">
-    <button id="btn-ok"      class="text-2xl text-[#ff7b00] bg-[#f6fbfc] rounded-lg px-3 py-2 border border-[#ffe5cc]"><i class="fas fa-check-square"></i></button>
-    <button id="btn-cancel"  class="text-2xl text-[#ff7b00]"><i class="fas fa-times"></i></button>
-    <button id="btn-trash"   class="text-2xl text-[#ff7b00]"><i class="fas fa-trash-alt"></i></button>
-    <button id="btn-up"      class="text-2xl text-[#ff7b00]"><i class="fas fa-arrow-up"></i></button>
-    <button id="btn-down"    class="text-2xl text-[#ff7b00]"><i class="fas fa-arrow-down"></i></button>
   </div>
-</div>
+
+  <div id="botoesCifrasFlutuantes"
+     class="fixed inset-x-0 bottom-6 flex justify-center z-50 pointer-events-none">
+    <div class="flex bg-white rounded-xl shadow-xl px-6 py-4 gap-6 pointer-events-auto">
+      <button id="btn-ok"      class="text-2xl text-[#ff7b00] bg-[#f6fbfc] rounded-lg px-3 py-2 border border-[#ffe5cc]"><i class="fas fa-check-square"></i></button>
+      <button id="btn-cancel"  class="text-2xl text-[#ff7b00]"><i class="fas fa-times"></i></button>
+      <button id="btn-trash"   class="text-2xl text-[#ff7b00]"><i class="fas fa-trash-alt"></i></button>
+      <button id="btn-up"      class="text-2xl text-[#ff7b00]"><i class="fas fa-arrow-up"></i></button>
+      <button id="btn-down"    class="text-2xl text-[#ff7b00]"><i class="fas fa-arrow-down"></i></button>
+    </div>
+  </div>
   
   <script src="script.js"></script>
+  <script type="module" src="transposer.js"></script>
 </body>
 </html>
