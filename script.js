@@ -454,6 +454,71 @@ function initializeCifraEvents() {
   });
 }
 
+// === FAV MENU FLUTUANTE ===
+function setupFavMenu() {
+  // Abrir/fechar menu
+  document.getElementById('favMenuToggle').onclick = () => {
+    document.getElementById('favMenu').classList.toggle('open');
+  };
+  document.body.addEventListener('click', e => {
+    if (!e.target.closest('.fav-menu-container')) {
+      document.getElementById('favMenu').classList.remove('open');
+    }
+  });
+
+  // Modo escuro
+  function setDarkMode(on) {
+    if (on) {
+      document.body.classList.add('darkmode');
+      localStorage.setItem('darkmode', '1');
+    } else {
+      document.body.classList.remove('darkmode');
+      localStorage.setItem('darkmode', '0');
+    }
+  }
+  // Estado inicial
+  if (localStorage.getItem('darkmode') === '1') setDarkMode(true);
+
+  document.getElementById('favDarkMode').onclick = function() {
+    const isDark = document.body.classList.contains('darkmode');
+    setDarkMode(!isDark);
+    this.classList.toggle('active', !isDark);
+  };
+
+  // Importar imagem
+  document.getElementById('favImportImg').onclick = function() {
+    document.getElementById('favFileInput').click();
+  };
+  document.getElementById('favFileInput').onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      alert("Imagem importada: " + file.name);
+      // Exemplo: aqui você pode mostrar preview ou enviar para nuvem
+    }
+    this.value = '';
+  };
+
+  // Tirar Foto
+  document.getElementById('favTakePhoto').onclick = function() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({video: true})
+        .then(stream => {
+          alert('Câmera acionada! (implemente sua lógica)');
+          stream.getTracks().forEach(track => track.stop());
+        })
+        .catch(() => alert('Não foi possível acessar a câmera!'));
+    } else {
+      alert('Este navegador não suporta acesso à câmera.');
+    }
+  };
+
+  // Enviar para nuvem
+  document.getElementById('favSendCloud').onclick = function() {
+    alert('Funcionalidade de envio para nuvem ainda não implementada!');
+    // Implemente aqui o upload para sua nuvem ou Google Drive, se desejar
+  };
+}
+
 // === INICIALIZAÇÃO ===
 document.addEventListener("DOMContentLoaded", () => {
   gapiLoadAndInit(() => {
@@ -467,4 +532,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeCifraEvents();
   setupCifraSwipeEvents();
   renderCategories();
+  setupFavMenu();
 });
