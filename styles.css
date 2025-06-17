@@ -3,11 +3,9 @@
   user-select: none;
   touch-action: pan-y;
 }
-
 .category-item.swiped {
   transform: translateX(-60px);
 }
-
 .delete-btn {
   display: none;
   position: absolute;
@@ -19,12 +17,10 @@
   padding: 0.25rem 0.75rem;
   z-index: 10;
 }
-
 .category-item.swiped .delete-btn, 
 .category-item:hover .delete-btn {
   display: block;
 }
-
 .hamburger-overlay {
   display: none;
   position: fixed;
@@ -32,15 +28,12 @@
   inset: 0;
   background: rgba(0,0,0,0.4);
 }
-
 .sidebar-open {
   transform: translateX(0) !important;
 }
-
 .sidebar-closed {
   transform: translateX(-100%) !important;
 }
-
 @media (min-width: 768px) {
   .sidebar-desktop {
     width: 320px;
@@ -49,7 +42,6 @@
     border-radius: 0.75rem;
   }
 }
-
 .full-screen-modal {
   position: fixed;
   inset: 0;
@@ -62,14 +54,12 @@
   padding: 32px 8px;
   color: #fff;
 }
-
 .full-screen-modal pre {
   white-space: pre-wrap;
   word-break: break-word;
   font-size: 1.1rem;
   font-family: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
 }
-
 .miniatura-cifra {
   width: 48px;
   height: 48px;
@@ -84,28 +74,23 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .miniatura-cifra:hover {
   background: #1d4ed8;
 }
-
 /* Autocomplete dropdown custom */
 #autocompleteList {
   border: 1px solid #e5e7eb;
   box-shadow: 0px 2px 8px rgba(0,0,0,.08);
   font-size: 1rem;
 }
-
 #autocompleteList li {
   cursor: pointer;
   padding: 8px 12px;
 }
-
 #autocompleteList li:hover, #autocompleteList li.active {
   background: #2563eb;
   color: #fff;
 }
-
 /* Cifras swipe para lixeira */
 .cifra-item .delete-cifra-btn {
   transition: opacity 0.2s;
@@ -116,8 +101,7 @@
   opacity: 1;
   pointer-events: auto;
 }
-
-/* Fav menu flutuante */
+/* Fav menu flutuante - INFERIOR DIREITO */
 .fav-menu-container {
   position: fixed;
   bottom: 24px;
@@ -182,7 +166,6 @@ body.darkmode, .darkmode .fav-menu {
   background: #101625;
   color: #f3f3f3;
 }
-
 /* Responsividade geral */
 .container, .max-w-3xl {
   width: 100%;
