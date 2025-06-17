@@ -116,3 +116,69 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Fav menu flutuante */
+.fav-menu-container {
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  z-index: 999;
+}
+.fav-menu {
+  background: var(--fav-bg, #fff);
+  border-radius: 16px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.10);
+  padding: 18px 16px;
+  min-width: 210px;
+  font-family: inherit;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  transition: background 0.3s;
+}
+.fav-menu.open { display: flex; }
+.fav-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: none;
+  font-size: 1.07rem;
+  color: #111;
+  padding: 7px 4px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background .2s, color .2s;
+}
+.fav-menu-btn:hover, .fav-menu-btn.active {
+  background: #eaeaea;
+}
+.fav-menu-toggle {
+  background: #1d4ed8;
+  border-radius: 50%;
+  width: 50px; height: 50px;
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.10);
+  margin-left: auto;
+  margin-bottom: 8px;
+}
+/* Dark mode */
+body.darkmode, .darkmode .fav-menu {
+  --fav-bg: #181f2b;
+  color: #f3f3f3;
+  background: #181f2b;
+}
+.darkmode .fav-menu-btn {
+  color: #f3f3f3;
+}
+.darkmode .fav-menu-btn:hover {
+  background: #273047;
+}
+.darkmode .fav-menu-toggle {
+  background: #101625;
+  color: #f3f3f3;
+}
