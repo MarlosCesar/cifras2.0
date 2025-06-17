@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <!-- GIS SDK para autenticação Google -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
 
@@ -31,6 +33,7 @@
       </div>
       <div class="flex items-center">
         <p class="hidden md:block ml-12 text-blue-100">Encontre as cifras na sua pasta do Google Drive</p>
+        <div id="googleSignInBtn"></div>
         <button id="btnGoogleSignOut" class="ml-4 px-3 py-2 bg-red-600 text-white rounded hidden" title="Sair do Google"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
@@ -64,17 +67,17 @@
 
   <!-- Fav Menu Flutuante -->
   <div class="fav-menu-container">
-  <button class="fav-menu-toggle" id="favMenuToggle" title="Menu Favoritos">
-    <i class="fas fa-star"></i>
-  </button>
-  <nav class="fav-menu" id="favMenu">
-    <button class="fav-menu-btn" id="favImportImg"><i class="fas fa-upload"></i> Importar imagem</button>
-    <button class="fav-menu-btn" id="favTakePhoto"><i class="fas fa-camera"></i> Tirar Foto</button>
-    <button class="fav-menu-btn" id="favSendCloud"><i class="fas fa-cloud-upload-alt"></i> Enviar p/ Nuvem</button>
-    <button class="fav-menu-btn" id="favDarkMode"><i class="fas fa-moon"></i> Modo escuro</button>
-  </nav>
-  <input type="file" id="favFileInput" accept="image/*" style="display:none">
-</div>
+    <button class="fav-menu-toggle" id="favMenuToggle" title="Menu Favoritos">
+      <i class="fas fa-star"></i>
+    </button>
+    <nav class="fav-menu" id="favMenu">
+      <button class="fav-menu-btn" id="favImportImg"><i class="fas fa-upload"></i> Importar imagem</button>
+      <button class="fav-menu-btn" id="favTakePhoto"><i class="fas fa-camera"></i> Tirar Foto</button>
+      <button class="fav-menu-btn" id="favSendCloud"><i class="fas fa-cloud-upload-alt"></i> Enviar p/ Nuvem</button>
+      <button class="fav-menu-btn" id="favDarkMode"><i class="fas fa-moon"></i> Modo escuro</button>
+    </nav>
+    <input type="file" id="favFileInput" accept="image/*" style="display:none">
+  </div>
 
   <!-- Modal Tela Cheia -->
   <div id="modalCifra" class="full-screen-modal hidden">
@@ -88,7 +91,6 @@
     </div>
   </div>
 
-  <script src="https://apis.google.com/js/api.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
