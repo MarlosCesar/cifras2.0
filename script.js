@@ -19,6 +19,77 @@ let selectedCategory = fixedCategories[0].id; // Default selecionado
 let allCifras = [];
 let isLoadingCifras = false;
 
+// ===== SELEÇÃO E INTERAÇÃO COM CIFRAS =====
+let cifrasSelecionadas = [];
+
+// Renderiza as cifras selecionadas na tela
+function renderCifrasSelecionadas() {
+  const cont = document.getElementById('cifrasSelecionadasContainer');
+  if (!cont) return;
+  cont.innerHTML = '';
+  cifrasSelecionadas.forEach((cifra, idx) => {
+    const div = document.createElement('div');
+    div.className = 'cifra-card-sel' + (cifra.selected ? ' selected' : '');
+    div.textContent = cifra.titulo;
+    div.onclick = () => {
+      cifra.selected = !cifra.selected;
+      renderCifrasSelecionadas();
+      renderBotoesFlutuantes();
+    };
+    cont.appendChild(div);
+  });
+  renderBotoesFlutuantes();
+}
+
+// Adicione esta função para usar ao selecionar (autocomplete ou lista)
+function onCifraSelecionada(nomeCifra) {
+  cifrasSelecionadas.push({ titulo: nomeCifra, selected: false });
+  renderCifrasSelecionadas();
+}
+
+// Botões flutuantes
+function renderBotoesFlutuantes() {
+  const btnUp = document.getElementById('btn-up');
+  const btnDown = document.getElementById('btn-down');
+  if (!btnUp || !btnDown) return;
+  const nSel = cifrasSelecionadas.filter(c => c.selected).length;
+  // "Subir" e "Descer" só ficam visíveis se 1 cifra selecionada
+  if (nSel === 1) {
+    btnUp.style.visibility = '';
+    btnDown.style.visibility = '';
+  } else {
+    btnUp.style.visibility = 'hidden';
+    btnDown.style.visibility = 'hidden';
+  }
+}
+
+document.getElementById('btn-ok').onclick = () => {
+  cifrasSelecionadas.forEach(c => c.selected = true);
+  renderCifrasSelecionadas();
+};
+document.getElementById('btn-cancel').onclick = () => {
+  cifrasSelecionadas.forEach(c => c.selected = false);
+  renderCifrasSelecionadas();
+};
+document.getElementById('btn-trash').onclick = () => {
+  cifrasSelecionadas = cifrasSelecionadas.filter(c => !c.selected);
+  renderCifrasSelecionadas();
+};
+document.getElementById('btn-up').onclick = () => {
+  const idx = cifrasSelecionadas.findIndex(c => c.selected);
+  if (idx > 0) {
+    [cifrasSelecionadas[idx - 1], cifrasSelecionadas[idx]] = [cifrasSelecionadas[idx], cifrasSelecionadas[idx - 1]];
+    renderCifrasSelecionadas();
+  }
+};
+document.getElementById('btn-down').onclick = () => {
+  const idx = cifrasSelecionadas.findIndex(c => c.selected);
+  if (idx >= 0 && idx < cifrasSelecionadas.length - 1) {
+    [cifrasSelecionadas[idx], cifrasSelecionadas[idx + 1]] = [cifrasSelecionadas[idx + 1], cifrasSelecionadas[idx]];
+    renderCifrasSelecionadas();
+  }
+};
+
 // === LOCALSTORAGE PARA CIFRAS POR CATEGORIA ===
 function getCifrasPorCategoria() {
   return JSON.parse(localStorage.getItem("cifrasPorCategoria") || '{}');
@@ -63,6 +134,7 @@ function googleSignOut() {
 // === RENDER CATEGORIAS ===
 function renderCategories() {
   const ul = document.getElementById('categoriesList');
+  if (!ul) return;
   ul.innerHTML = '';
   fixedCategories.forEach(cat => {
     if (cat.name !== "+") {
@@ -95,6 +167,7 @@ function renderCifras() {
   const songList = document.getElementById('songList');
   const loading = document.getElementById('loadingCifras');
   const erro = document.getElementById('erroCifras');
+  if (!songList || !loading || !erro) return;
   loading.classList.add('hidden');
   erro.classList.add('hidden');
   songList.innerHTML = '';
@@ -170,7 +243,7 @@ function setupAutocompleteCifras() {
       e.preventDefault();
     } else if (e.key === "Enter") {
       if (filtered[activeIndex]) {
-        openCifraModal(filtered[activeIndex].id, filtered[activeIndex].nomeSemExt);
+        onCifraSelecionada(filtered[activeIndex].nomeSemExt);
         input.value = "";
         closeDropdown();
         e.preventDefault();
@@ -183,7 +256,7 @@ function setupAutocompleteCifras() {
     const li = e.target.closest('li[data-idx]');
     if (li) {
       const idx = parseInt(li.dataset.idx, 10);
-      openCifraModal(filtered[idx].id, filtered[idx].nomeSemExt);
+      onCifraSelecionada(filtered[idx].nomeSemExt);
       input.value = "";
       closeDropdown();
       e.preventDefault();
@@ -312,9 +385,9 @@ function initializeMenuEvents() {
   const hamburgerOverlay = document.getElementById('hamburgerOverlay');
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const closeSidebar = document.getElementById('closeSidebar');
-  hamburgerBtn.addEventListener('click', openSidebar);
-  closeSidebar.addEventListener('click', closeSidebarFn);
-  hamburgerOverlay.addEventListener('click', closeSidebarFn);
+  if (hamburgerBtn) hamburgerBtn.addEventListener('click', openSidebar);
+  if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFn);
+  if (hamburgerOverlay) hamburgerOverlay.addEventListener('click', closeSidebarFn);
   function openSidebar() {
     sidebarMenu.classList.remove('sidebar-closed');
     sidebarMenu.classList.add('sidebar-open');
@@ -411,12 +484,14 @@ function initializeCifraEvents() {
 
 // === FAV MENU FLUTUANTE ===
 function setupFavMenu() {
+  const favMenu = document.getElementById('favMenu');
+  if (!favMenu) return;
   document.getElementById('favMenuToggle').onclick = () => {
-    document.getElementById('favMenu').classList.toggle('open');
+    favMenu.classList.toggle('open');
   };
   document.body.addEventListener('click', e => {
     if (!e.target.closest('.fav-menu-container')) {
-      document.getElementById('favMenu').classList.remove('open');
+      favMenu.classList.remove('open');
     }
   });
   function setDarkMode(on) {
@@ -451,7 +526,7 @@ function setupFavMenu() {
           alert('Câmera acionada! (implemente sua lógica)');
           stream.getTracks().forEach(track => track.stop());
         })
-        .catch(() => alert('Não foi possível acessar a câmera!'));
+        .catch(() => alert('Não foi possível acessar a câmera!');
     } else {
       alert('Este navegador não suporta acesso à câmera.');
     }
@@ -471,4 +546,5 @@ document.addEventListener("DOMContentLoaded", () => {
   setupCifraSwipeEvents();
   renderCategories();
   setupFavMenu();
+  renderCifrasSelecionadas();
 });
