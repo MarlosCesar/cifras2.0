@@ -1,8 +1,8 @@
-// === CONFIGURAÇÃO GOOGLE DRIVE ===
+// === CONFIGURAÇÃO GOOGLE DRIVE E GIS ===
 const GOOGLE_DRIVE_FOLDER_ID = "1OzrvB4NCBRTDgMsE_AhQy0b11bdn3v82";
-const GOOGLE_API_KEY = "AIzaSyD2qLxX7fYIMxt34aeWWDsx_nWaSsFCguk";
 const GOOGLE_CLIENT_ID = "977942417278-0mfg7iehelnjfqmk5a32elsr7ll8hkil.apps.googleusercontent.com";
 const GOOGLE_SCOPES = "https://www.googleapis.com/auth/drive.readonly";
+let googleAccessToken = null; // GIS token
 
 // === CATEGORIAS ===
 const fixedCategories = [
@@ -17,7 +17,6 @@ const fixedCategories = [
 let customCategories = JSON.parse(localStorage.getItem('customCategories') || '[]');
 let selectedCategory = fixedCategories[0].id; // Default selecionado
 let allCifras = [];
-let gapiInitialized = false;
 let isLoadingCifras = false;
 
 // === LOCALSTORAGE PARA CIFRAS POR CATEGORIA ===
@@ -28,11 +27,43 @@ function setCifrasPorCategoria(obj) {
   localStorage.setItem("cifrasPorCategoria", JSON.stringify(obj));
 }
 
+// === GIS LOGIN ===
+let tokenClient;
+function initializeGIS() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: GOOGLE_SCOPES,
+    callback: (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        googleAccessToken = tokenResponse.access_token;
+        document.getElementById('googleSignInBtn').style.display = 'none';
+        document.getElementById('btnGoogleSignOut').classList.remove('hidden');
+        loadCifras();
+      }
+    }
+  });
+  // Botão customizado Google
+  document.getElementById('googleSignInBtn').innerHTML = `
+    <button id="doGoogleLogin" class="px-4 py-2 bg-blue-600 rounded text-white font-bold flex items-center">
+      <i class="fab fa-google mr-2"></i> Entrar com Google
+    </button>
+  `;
+  document.getElementById('doGoogleLogin').onclick = () => {
+    tokenClient.requestAccessToken();
+  };
+  document.getElementById('btnGoogleSignOut').onclick = googleSignOut;
+}
+function googleSignOut() {
+  googleAccessToken = null;
+  document.getElementById('btnGoogleSignOut').classList.add('hidden');
+  document.getElementById('googleSignInBtn').style.display = '';
+  document.getElementById("songList").innerHTML = `<div class="col-span-full text-center text-gray-600 py-20">Faça login novamente para ver as cifras.</div>`;
+}
+
 // === RENDER CATEGORIAS ===
 function renderCategories() {
   const ul = document.getElementById('categoriesList');
   ul.innerHTML = '';
-
   fixedCategories.forEach(cat => {
     if (cat.name !== "+") {
       ul.innerHTML += `
@@ -42,7 +73,6 @@ function renderCategories() {
       `;
     }
   });
-
   customCategories.forEach((cat, idx) => {
     ul.innerHTML += `
       <li class="relative">
@@ -53,7 +83,6 @@ function renderCategories() {
       </li>
     `;
   });
-
   ul.innerHTML += `
     <li>
       <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
@@ -69,19 +98,13 @@ function renderCifras() {
   loading.classList.add('hidden');
   erro.classList.add('hidden');
   songList.innerHTML = '';
-
-  // Atualiza título
   document.getElementById('categoriaTitulo').textContent = selectedCategory ? selectedCategory : "Cifras Disponíveis";
-
-  // Busca cifras da categoria no localStorage
   const cifrasPorCategoria = getCifrasPorCategoria();
   let filtered = cifrasPorCategoria[selectedCategory] || [];
-
   if (!filtered.length) {
     songList.innerHTML = `<div class="col-span-full text-center text-gray-500 py-16">Nenhuma cifra para esta categoria.</div>`;
     return;
   }
-
   filtered.forEach((file, idx) => {
     const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
     const html = `
@@ -104,21 +127,17 @@ function setupAutocompleteCifras() {
   const input = document.getElementById('autocompleteCifras');
   const list = document.getElementById('autocompleteList');
   if (!input || !list) return;
-
   input.oninput = null;
   input.onkeydown = null;
   input.onblur = null;
   list.onmousedown = null;
-
   let filtered = [];
   let activeIndex = -1;
-
   function closeDropdown() {
     list.classList.add('hidden');
     list.innerHTML = '';
     activeIndex = -1;
   }
-
   input.oninput = function () {
     const value = this.value.trim().toLowerCase();
     if (!value) {
@@ -129,19 +148,16 @@ function setupAutocompleteCifras() {
       .map(f => ({ ...f, nomeSemExt: f.name.replace(/\.[^/.]+$/, "") }))
       .filter(f => f.nomeSemExt.toLowerCase().includes(value))
       .sort((a, b) => a.nomeSemExt.localeCompare(b.nomeSemExt, 'pt-BR', { sensitivity: 'base' }));
-
     if (!filtered.length) {
       closeDropdown();
       return;
     }
-
     list.innerHTML = filtered
       .map((f, idx) => `<li data-idx="${idx}" ${idx === 0 ? 'class="active"' : ''}>${f.nomeSemExt}</li>`)
       .join('');
     list.classList.remove('hidden');
     activeIndex = 0;
   };
-
   input.onkeydown = function (e) {
     if (list.classList.contains('hidden')) return;
     if (e.key === "ArrowDown") {
@@ -163,7 +179,6 @@ function setupAutocompleteCifras() {
       closeDropdown();
     }
   };
-
   list.onmousedown = function (e) {
     const li = e.target.closest('li[data-idx]');
     if (li) {
@@ -174,19 +189,11 @@ function setupAutocompleteCifras() {
       e.preventDefault();
     }
   };
-
-  input.onblur = function () {
-    setTimeout(closeDropdown, 120);
-  };
-
+  input.onblur = function () { setTimeout(closeDropdown, 120); };
   function updateActive() {
     const items = Array.from(list.children);
-    items.forEach((li, idx) => {
-      li.classList.toggle('active', idx === activeIndex);
-    });
-    if (items[activeIndex]) {
-      items[activeIndex].scrollIntoView({ block: 'nearest' });
-    }
+    items.forEach((li, idx) => { li.classList.toggle('active', idx === activeIndex); });
+    if (items[activeIndex]) { items[activeIndex].scrollIntoView({ block: 'nearest' }); }
   }
 }
 
@@ -194,59 +201,34 @@ function setupAutocompleteCifras() {
 function addCifraToCategory(cifra, categoria) {
   const cifrasPorCategoria = getCifrasPorCategoria();
   if (!cifrasPorCategoria[categoria]) cifrasPorCategoria[categoria] = [];
-  // Evita duplicidade
   if (!cifrasPorCategoria[categoria].some(f => f.id === cifra.id)) {
     cifrasPorCategoria[categoria].push(cifra);
     setCifrasPorCategoria(cifrasPorCategoria);
   }
 }
 
-// === GOOGLE DRIVE ===
-function gapiLoadAndInit(callback) {
-  gapi.load('client:auth2', async function() {
-    await gapi.client.init({
-      apiKey: GOOGLE_API_KEY,
-      clientId: GOOGLE_CLIENT_ID,
-      scope: GOOGLE_SCOPES,
-      discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
-    });
-    gapiInitialized = true;
-    callback && callback();
-  });
-}
-
-async function ensureGoogleAuth() {
-  const authInstance = gapi.auth2.getAuthInstance();
-  if (!authInstance.isSignedIn.get()) {
-    await authInstance.signIn();
-    document.getElementById("btnGoogleSignOut").classList.remove("hidden");
-  }
-}
-
-function signOutGoogle() {
-  const authInstance = gapi.auth2.getAuthInstance();
-  if (authInstance && authInstance.isSignedIn.get()) {
-    authInstance.signOut().then(() => {
-      document.getElementById("btnGoogleSignOut").classList.add("hidden");
-      document.getElementById("songList").innerHTML = `<div class="col-span-full text-center text-gray-600 py-20">Faça login novamente para ver as cifras.</div>`;
-    });
-  }
-}
-
+// === GOOGLE DRIVE FETCH ===
 async function listDriveCifras() {
-  await ensureGoogleAuth();
-  const res = await gapi.client.drive.files.list({
-    q: `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and trashed = false`,
-    fields: "files(id, name, mimeType)",
-    pageSize: 200
+  if (!googleAccessToken) throw new Error("Não autenticado!");
+  const url = `https://www.googleapis.com/drive/v3/files?q='${GOOGLE_DRIVE_FOLDER_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&pageSize=200`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': 'Bearer ' + googleAccessToken }
   });
-  return res.result.files;
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.files;
 }
-
+async function getDriveFileContent(fileId) {
+  if (!googleAccessToken) throw new Error("Não autenticado!");
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': 'Bearer ' + googleAccessToken }
+  });
+  return await res.text();
+}
 async function loadCifras() {
   isLoadingCifras = true;
   document.getElementById('loadingCifras').classList.remove('hidden');
-  
   try {
     allCifras = await listDriveCifras();
     renderCifras();
@@ -257,7 +239,6 @@ async function loadCifras() {
     allCifras = [];
     setupAutocompleteCifras();
   }
-  
   document.getElementById('loadingCifras').classList.add('hidden');
   isLoadingCifras = false;
 }
@@ -272,19 +253,9 @@ async function openCifraModal(fileId, nomeCifra) {
   content.textContent = "Carregando...";
   addBtnWrap.innerHTML = '';
   modal.classList.remove('hidden');
-  
   try {
-    await ensureGoogleAuth();
-    const file = await gapi.client.drive.files.get({
-      fileId,
-      alt: 'media'
-    });
-    if (typeof file.body === "string") {
-      content.textContent = file.body;
-    } else {
-      content.textContent = "Não foi possível exibir o conteúdo deste arquivo.";
-    }
-    // Botão adicionar à categoria
+    const text = await getDriveFileContent(fileId);
+    content.textContent = text;
     if (selectedCategory) {
       const addBtn = document.createElement('button');
       addBtn.textContent = `Adicionar à categoria "${selectedCategory}"`;
@@ -324,8 +295,6 @@ function setupCifraSwipeEvents() {
     }
   });
   document.getElementById('songList').addEventListener('touchend', function(){ swipedIdx = null; });
-
-  // Clique na lixeira para excluir
   document.getElementById('songList').addEventListener('click', function(e) {
     if (e.target.closest('.delete-cifra-btn')) {
       const idx = e.target.closest('.cifra-item').dataset.idx;
@@ -343,30 +312,25 @@ function initializeMenuEvents() {
   const hamburgerOverlay = document.getElementById('hamburgerOverlay');
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const closeSidebar = document.getElementById('closeSidebar');
-  
   hamburgerBtn.addEventListener('click', openSidebar);
   closeSidebar.addEventListener('click', closeSidebarFn);
   hamburgerOverlay.addEventListener('click', closeSidebarFn);
-  
   function openSidebar() {
     sidebarMenu.classList.remove('sidebar-closed');
     sidebarMenu.classList.add('sidebar-open');
     hamburgerOverlay.style.display = 'block';
   }
-  
   function closeSidebarFn() {
     sidebarMenu.classList.remove('sidebar-open');
     sidebarMenu.classList.add('sidebar-closed');
     hamburgerOverlay.style.display = 'none';
   }
-  
   document.addEventListener('keydown', function(e){
     if (e.key === "Escape" && sidebarMenu.classList.contains('sidebar-open')) {
       closeSidebarFn();
     }
   });
 }
-
 function initializeCategoryEvents() {
   document.getElementById('categoriesList').addEventListener('click', function(e){
     if (e.target.dataset.category) {
@@ -375,7 +339,6 @@ function initializeCategoryEvents() {
       renderCifras();
     }
   });
-
   document.getElementById('categoriesList').addEventListener('click', function(e){
     if (e.target.id === "addCategoryBtn") {
       const li = e.target.closest('li');
@@ -385,7 +348,6 @@ function initializeCategoryEvents() {
       `;
       setTimeout(() => document.getElementById('newCatInput').focus(), 100);
     }
-    
     if (e.target.id === "saveCatBtn" || e.target.closest("#saveCatBtn")) {
       const input = document.getElementById('newCatInput');
       if (input && input.value.trim()) {
@@ -396,7 +358,6 @@ function initializeCategoryEvents() {
         renderCategories();
       }
     }
-    
     if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
       const idx = e.target.dataset.idx || e.target.closest('.delete-btn').dataset.idx;
       customCategories.splice(idx, 1);
@@ -408,7 +369,6 @@ function initializeCategoryEvents() {
     }
   });
 }
-
 function initializeSwipeEvents() {
   let startX = 0, swipedIdx = null;
   document.getElementById('categoriesList').addEventListener('touchstart', function(e){
@@ -428,11 +388,8 @@ function initializeSwipeEvents() {
       }
     }
   });
-  document.getElementById('categoriesList').addEventListener('touchend', function(){
-    swipedIdx = null;
-  });
+  document.getElementById('categoriesList').addEventListener('touchend', function(){ swipedIdx = null; });
 }
-
 function initializeCifraEvents() {
   document.getElementById('songList').addEventListener('click', function(e) {
     const miniatura = e.target.closest('.miniatura-cifra');
@@ -442,11 +399,9 @@ function initializeCifraEvents() {
       openCifraModal(fileId, nome);
     }
   });
-
   document.getElementById('closeModalCifra').addEventListener('click', () => {
     document.getElementById('modalCifra').classList.add('hidden');
   });
-  
   document.getElementById('modalCifra').addEventListener('click', function(e){
     if (e.target === this) {
       this.classList.add('hidden');
@@ -456,7 +411,6 @@ function initializeCifraEvents() {
 
 // === FAV MENU FLUTUANTE ===
 function setupFavMenu() {
-  // Abrir/fechar menu
   document.getElementById('favMenuToggle').onclick = () => {
     document.getElementById('favMenu').classList.toggle('open');
   };
@@ -465,8 +419,6 @@ function setupFavMenu() {
       document.getElementById('favMenu').classList.remove('open');
     }
   });
-
-  // Modo escuro
   function setDarkMode(on) {
     if (on) {
       document.body.classList.add('darkmode');
@@ -476,16 +428,12 @@ function setupFavMenu() {
       localStorage.setItem('darkmode', '0');
     }
   }
-  // Estado inicial
   if (localStorage.getItem('darkmode') === '1') setDarkMode(true);
-
   document.getElementById('favDarkMode').onclick = function() {
     const isDark = document.body.classList.contains('darkmode');
     setDarkMode(!isDark);
     this.classList.toggle('active', !isDark);
   };
-
-  // Importar imagem
   document.getElementById('favImportImg').onclick = function() {
     document.getElementById('favFileInput').click();
   };
@@ -493,12 +441,9 @@ function setupFavMenu() {
     const file = e.target.files[0];
     if (file) {
       alert("Imagem importada: " + file.name);
-      // Exemplo: aqui você pode mostrar preview ou enviar para nuvem
     }
     this.value = '';
   };
-
-  // Tirar Foto
   document.getElementById('favTakePhoto').onclick = function() {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({video: true})
@@ -511,21 +456,14 @@ function setupFavMenu() {
       alert('Este navegador não suporta acesso à câmera.');
     }
   };
-
-  // Enviar para nuvem
   document.getElementById('favSendCloud').onclick = function() {
     alert('Funcionalidade de envio para nuvem ainda não implementada!');
-    // Implemente aqui o upload para sua nuvem ou Google Drive, se desejar
   };
 }
 
 // === INICIALIZAÇÃO ===
 document.addEventListener("DOMContentLoaded", () => {
-  gapiLoadAndInit(() => {
-    document.getElementById("btnGoogleSignOut").addEventListener("click", signOutGoogle);
-    loadCifras();
-  });
-
+  initializeGIS();
   initializeMenuEvents();
   initializeCategoryEvents();
   initializeSwipeEvents();
