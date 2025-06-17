@@ -5,12 +5,19 @@ let allCifras = [];
 let gapiInitialized = false;
 let isLoadingCifras = false;
 
+// === LOCALSTORAGE PARA CIFRAS POR CATEGORIA ===
+function getCifrasPorCategoria() {
+  return JSON.parse(localStorage.getItem("cifrasPorCategoria") || '{}');
+}
+function setCifrasPorCategoria(obj) {
+  localStorage.setItem("cifrasPorCategoria", JSON.stringify(obj));
+}
+
 // === RENDER CATEGORIAS ===
 function renderCategories() {
   const ul = document.getElementById('categoriesList');
   ul.innerHTML = '';
 
-  // Renderiza as categorias fixas (exceto o "+")
   fixedCategories.forEach(cat => {
     if (cat.name !== "+") {
       ul.innerHTML += `
@@ -21,7 +28,6 @@ function renderCategories() {
     }
   });
 
-  // Renderiza as categorias customizadas
   customCategories.forEach((cat, idx) => {
     ul.innerHTML += `
       <li class="relative">
@@ -33,7 +39,6 @@ function renderCategories() {
     `;
   });
 
-  // Botão "+ Adicionar" sempre por último
   ul.innerHTML += `
     <li>
       <button id="addCategoryBtn" class="text-green-600 hover:text-green-800 font-bold w-full text-left">+ Adicionar</button>
@@ -41,40 +46,39 @@ function renderCategories() {
   `;
 }
 
-// === RENDER CIFRAS ===
+// === RENDER CIFRAS DA CATEGORIA ===
 function renderCifras() {
   const songList = document.getElementById('songList');
   const loading = document.getElementById('loadingCifras');
   const erro = document.getElementById('erroCifras');
-  
   loading.classList.add('hidden');
   erro.classList.add('hidden');
   songList.innerHTML = '';
-  
-  // Filtrar por categoria
-  let filtered = allCifras;
-  if (selectedCategory) {
-    filtered = allCifras.filter(cifra => {
-      return cifra.name.toLowerCase().includes(selectedCategory.toLowerCase());
-    });
-  }
-  
+
+  // Atualiza título
+  document.getElementById('categoriaTitulo').textContent = selectedCategory ? selectedCategory : "Cifras Disponíveis";
+
+  // Busca cifras da categoria no localStorage
+  const cifrasPorCategoria = getCifrasPorCategoria();
+  let filtered = cifrasPorCategoria[selectedCategory] || [];
+
   if (!filtered.length) {
     songList.innerHTML = `<div class="col-span-full text-center text-gray-500 py-16">Nenhuma cifra para esta categoria.</div>`;
     return;
   }
-  
-  filtered.forEach(file => {
+
+  filtered.forEach((file, idx) => {
     const nomeSemExt = file.name.replace(/\.[^/.]+$/, "");
     const html = `
-      <div class="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 cifra-card hover:ring-2 hover:ring-blue-400 transition relative">
+      <div class="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 cifra-card hover:ring-2 hover:ring-blue-400 transition relative cifra-item" data-idx="${idx}" draggable="false">
         <div class="miniatura-cifra" data-fileid="${file.id}" data-nome="${nomeSemExt}" title="Abrir cifra">
           <i class="fas fa-music"></i>
         </div>
         <div class="flex-1">
           <span class="block font-bold text-lg text-blue-700">${nomeSemExt}</span>
-          <span class="block text-xs text-gray-400 mt-1">${file.mimeType}</span>
+          <span class="block text-xs text-gray-400 mt-1">${file.mimeType || ""}</span>
         </div>
+        <button class="delete-cifra-btn absolute right-4 top-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full px-2 py-1 shadow-lg"><i class="fas fa-trash"></i></button>
       </div>`;
     songList.insertAdjacentHTML('beforeend', html);
   });
@@ -86,7 +90,6 @@ function setupAutocompleteCifras() {
   const list = document.getElementById('autocompleteList');
   if (!input || !list) return;
 
-  // Remove event listeners antigos para evitar duplicidade
   input.oninput = null;
   input.onkeydown = null;
   input.onblur = null;
@@ -172,6 +175,17 @@ function setupAutocompleteCifras() {
   }
 }
 
+// === ADICIONAR CIFRA À CATEGORIA ===
+function addCifraToCategory(cifra, categoria) {
+  const cifrasPorCategoria = getCifrasPorCategoria();
+  if (!cifrasPorCategoria[categoria]) cifrasPorCategoria[categoria] = [];
+  // Evita duplicidade
+  if (!cifrasPorCategoria[categoria].some(f => f.id === cifra.id)) {
+    cifrasPorCategoria[categoria].push(cifra);
+    setCifrasPorCategoria(cifrasPorCategoria);
+  }
+}
+
 // === GOOGLE DRIVE ===
 function gapiLoadAndInit(callback) {
   gapi.load('client:auth2', async function() {
@@ -221,7 +235,7 @@ async function loadCifras() {
   try {
     allCifras = await listDriveCifras();
     renderCifras();
-    setupAutocompleteCifras(); // Inicializa autocomplete após as cifras carregarem
+    setupAutocompleteCifras();
   } catch (e) {
     document.getElementById('erroCifras').textContent = "Erro ao acessar o Google Drive: " + e.message;
     document.getElementById('erroCifras').classList.remove('hidden');
@@ -238,14 +252,14 @@ async function openCifraModal(fileId, nomeCifra) {
   const modal = document.getElementById('modalCifra');
   const titulo = document.getElementById('modalCifraTitulo');
   const content = document.getElementById('modalCifraContent');
-  
+  const addBtnWrap = document.getElementById('modalAddBtnWrap');
   titulo.textContent = nomeCifra;
   content.textContent = "Carregando...";
+  addBtnWrap.innerHTML = '';
   modal.classList.remove('hidden');
   
   try {
     await ensureGoogleAuth();
-    // Pega o conteúdo
     const file = await gapi.client.drive.files.get({
       fileId,
       alt: 'media'
@@ -255,9 +269,57 @@ async function openCifraModal(fileId, nomeCifra) {
     } else {
       content.textContent = "Não foi possível exibir o conteúdo deste arquivo.";
     }
+    // Botão adicionar à categoria
+    if (selectedCategory) {
+      const addBtn = document.createElement('button');
+      addBtn.textContent = `Adicionar à categoria "${selectedCategory}"`;
+      addBtn.className = "mt-4 px-4 py-2 bg-blue-600 rounded text-white font-bold";
+      addBtn.onclick = () => {
+        addCifraToCategory({id: fileId, name: nomeCifra}, selectedCategory);
+        renderCifras();
+        modal.classList.add('hidden');
+      };
+      addBtnWrap.innerHTML = '';
+      addBtnWrap.appendChild(addBtn);
+    }
   } catch (e) {
     content.textContent = "Erro ao carregar cifra: " + e.message;
   }
+}
+
+// === SWIPE E EXCLUSÃO DE CIFRA ===
+function setupCifraSwipeEvents() {
+  let startX = 0, swipedIdx = null;
+  document.getElementById('songList').addEventListener('touchstart', function(e){
+    const item = e.target.closest('.cifra-item');
+    if (item) {
+      startX = e.touches[0].clientX;
+      swipedIdx = item.dataset.idx;
+    }
+  });
+  document.getElementById('songList').addEventListener('touchmove', function(e){
+    if (swipedIdx !== null) {
+      const item = document.querySelector(`.cifra-item[data-idx="${swipedIdx}"]`);
+      if (item) {
+        let diff = e.touches[0].clientX - startX;
+        const btn = item.querySelector('.delete-cifra-btn');
+        if (diff < -30) btn.classList.add('visible');
+        else btn.classList.remove('visible');
+      }
+    }
+  });
+  document.getElementById('songList').addEventListener('touchend', function(){ swipedIdx = null; });
+
+  // Clique na lixeira para excluir
+  document.getElementById('songList').addEventListener('click', function(e) {
+    if (e.target.closest('.delete-cifra-btn')) {
+      const idx = e.target.closest('.cifra-item').dataset.idx;
+      const cifrasPorCategoria = getCifrasPorCategoria();
+      cifrasPorCategoria[selectedCategory].splice(idx, 1);
+      setCifrasPorCategoria(cifrasPorCategoria);
+      renderCifras();
+    }
+  });
 }
 
 // === HANDLERS DE EVENTOS ===
@@ -314,7 +376,7 @@ function initializeCategoryEvents() {
       if (input && input.value.trim()) {
         const value = input.value.trim();
         const id = value;
-        customCategories.unshift({ name: value, id }); // ADICIONA NO INÍCIO
+        customCategories.unshift({ name: value, id });
         localStorage.setItem('customCategories', JSON.stringify(customCategories));
         renderCategories();
       }
@@ -334,7 +396,6 @@ function initializeCategoryEvents() {
 
 function initializeSwipeEvents() {
   let startX = 0, swipedIdx = null;
-  
   document.getElementById('categoriesList').addEventListener('touchstart', function(e){
     const item = e.target.closest('.category-item');
     if (item) {
@@ -342,7 +403,6 @@ function initializeSwipeEvents() {
       swipedIdx = item.dataset.idx;
     }
   });
-  
   document.getElementById('categoriesList').addEventListener('touchmove', function(e){
     if (swipedIdx !== null) {
       const item = document.querySelector(`.category-item[data-idx="${swipedIdx}"]`);
@@ -353,7 +413,6 @@ function initializeSwipeEvents() {
       }
     }
   });
-  
   document.getElementById('categoriesList').addEventListener('touchend', function(){
     swipedIdx = null;
   });
@@ -391,5 +450,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeCategoryEvents();
   initializeSwipeEvents();
   initializeCifraEvents();
+  setupCifraSwipeEvents();
   renderCategories();
 });
