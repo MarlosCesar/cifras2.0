@@ -105,3 +105,14 @@
   background: #2563eb;
   color: #fff;
 }
+
+/* Cifras swipe para lixeira */
+.cifra-item .delete-cifra-btn {
+  transition: opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+}
+.cifra-item .delete-cifra-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
