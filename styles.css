@@ -219,3 +219,32 @@ body.darkmode, .darkmode .fav-menu {
     font-size: 1.3rem;
   }
 }
+
+#cifrasSelecionadasContainer {
+  background: #f6fbfc;
+  min-height: 64vh;
+}
+.cifra-card-sel {
+  border: 2px solid #ff7b00;
+  border-radius: 16px;
+  background: #fff;
+  padding: 22px 18px;
+  margin-bottom: 18px;
+  font-size: 1.16rem;
+  font-weight: 500;
+  color: #161616;
+  box-shadow: 0 2px 12px 0 rgba(255,123,0,0.07);
+  width: 96vw;
+  max-width: 410px;
+  display: flex;
+  align-items: center;
+  transition: box-shadow .2s;
+}
+.cifra-card-sel.selected {
+  background: #fffbf5;
+  box-shadow: 0 2px 24px 0 rgba(255,123,0,0.18);
+}
+@media (max-width: 500px) {
+  .cifra-card-sel { font-size: 1rem; padding: 18px 8px; }
+  #botoesCifrasFlutuantes > div { padding: 12px 8px; gap: 18px;}
+}
