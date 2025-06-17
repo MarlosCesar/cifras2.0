@@ -53,7 +53,6 @@ function renderBotoesFlutuantes() {
   const btnDown = document.getElementById('btn-down');
   if (!btnUp || !btnDown) return;
   const nSel = cifrasSelecionadas.filter(c => c.selected).length;
-  // "Subir" e "Descer" só ficam visíveis se 1 cifra selecionada
   if (nSel === 1) {
     btnUp.style.visibility = '';
     btnDown.style.visibility = '';
@@ -113,7 +112,6 @@ function initializeGIS() {
       }
     }
   });
-  // Botão customizado Google
   document.getElementById('googleSignInBtn').innerHTML = `
     <button id="doGoogleLogin" class="px-4 py-2 bg-blue-600 rounded text-white font-bold flex items-center">
       <i class="fab fa-google mr-2"></i> Entrar com Google
@@ -317,18 +315,26 @@ async function loadCifras() {
 }
 
 // === FULLSCREEN MODAL PARA CIFRA ===
+let currentTranspose = 0;
+let cifraModalOriginal = "";
+
 async function openCifraModal(fileId, nomeCifra) {
   const modal = document.getElementById('modalCifra');
   const titulo = document.getElementById('modalCifraTitulo');
   const content = document.getElementById('modalCifraContent');
   const addBtnWrap = document.getElementById('modalAddBtnWrap');
+  const transposeLabel = document.getElementById('transposeLabel');
   titulo.textContent = nomeCifra;
-  content.textContent = "Carregando...";
+  content.innerHTML = "Carregando...";
   addBtnWrap.innerHTML = '';
   modal.classList.remove('hidden');
+  currentTranspose = 0;
+  cifraModalOriginal = "";
+  transposeLabel.textContent = "";
   try {
     const text = await getDriveFileContent(fileId);
-    content.textContent = text;
+    cifraModalOriginal = text;
+    renderCifraWithTranspose();
     if (selectedCategory) {
       const addBtn = document.createElement('button');
       addBtn.textContent = `Adicionar à categoria "${selectedCategory}"`;
@@ -345,6 +351,47 @@ async function openCifraModal(fileId, nomeCifra) {
     content.textContent = "Erro ao carregar cifra: " + e.message;
   }
 }
+
+function renderCifraWithTranspose() {
+  const content = document.getElementById('modalCifraContent');
+  const transposeLabel = document.getElementById('transposeLabel');
+  if (!cifraModalOriginal) return;
+  content.innerHTML = window.cifraTransposerRender(cifraModalOriginal, currentTranspose);
+  if (currentTranspose === 0) transposeLabel.textContent = "Tom original";
+  else transposeLabel.textContent = (currentTranspose > 0 ? "+" : "") + currentTranspose + " semitom(s)";
+}
+
+// Eventos dos botões de transposição e fullscreen
+document.addEventListener("DOMContentLoaded", () => {
+  initializeGIS();
+  initializeMenuEvents();
+  initializeCategoryEvents();
+  initializeSwipeEvents();
+  initializeCifraEvents();
+  setupCifraSwipeEvents();
+  renderCategories();
+  setupFavMenu();
+  renderCifrasSelecionadas();
+
+  document.getElementById('btnTransposeUp').onclick = () => {
+    currentTranspose++;
+    renderCifraWithTranspose();
+  };
+  document.getElementById('btnTransposeDown').onclick = () => {
+    currentTranspose--;
+    renderCifraWithTranspose();
+  };
+  document.getElementById('btnFullscreenCifra').onclick = () => {
+    const modal = document.querySelector('.cifra-modal-box');
+    if (!document.fullscreenElement) {
+      modal.requestFullscreen();
+      modal.classList.add('fullscreen');
+    } else {
+      document.exitFullscreen();
+      modal.classList.remove('fullscreen');
+    }
+  };
+});
 
 // === SWIPE E EXCLUSÃO DE CIFRA ===
 function setupCifraSwipeEvents() {
@@ -535,16 +582,3 @@ function setupFavMenu() {
     alert('Funcionalidade de envio para nuvem ainda não implementada!');
   };
 }
-
-// === INICIALIZAÇÃO ===
-document.addEventListener("DOMContentLoaded", () => {
-  initializeGIS();
-  initializeMenuEvents();
-  initializeCategoryEvents();
-  initializeSwipeEvents();
-  initializeCifraEvents();
-  setupCifraSwipeEvents();
-  renderCategories();
-  setupFavMenu();
-  renderCifrasSelecionadas();
-});
