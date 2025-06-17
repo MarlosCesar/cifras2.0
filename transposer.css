@@ -1,0 +1,23 @@
+.nota-cifra {
+  font-weight: bold;
+  color: #ffe066;
+  position: relative;
+  transition: color .15s;
+}
+.nota-cifra.overlay .nota-original {
+  display: none;
+}
+.nota-cifra.overlay .nota-transposta {
+  color: #7dfc9e;
+  background: #111;
+  border-radius: 4px;
+  padding: 0 3px;
+  font-weight: bold;
+}
+.fullscreen .nota-cifra {
+  font-size: 1.25em;
+}
+body.darkmode, .darkmode .full-screen-modal, .darkmode .cifra-modal-box {
+  background: #000 !important;
+  color: #fff !important;
+}
